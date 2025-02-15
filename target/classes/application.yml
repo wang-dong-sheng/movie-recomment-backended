@@ -1,0 +1,50 @@
+server:
+  port: 10015
+  max-http-header-size: 8192
+  tomcat:
+    accesslog:
+      enabled: true
+      directory: access_log
+      prefix: access_log
+      pattern: '%h %l %u %t "%r" %s %b "%{Referer}i" "%{User-Agent}i" "%{X-Forwarded-For}i" "%{X-Real-IP}i" %D %S "%U" %v'
+    basedir: ./
+spring:
+  application:
+    name: movie-recommend
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver # mysql驱动
+    username: root # 你的数据库用户名
+    password: abc123 # 你的数据库密码，url中添加数据库地址和端口
+    url: jdbc:mysql://localhost:3306/movie?useSSL=false&serverTimezone=Asia/Shanghai&autoReconnect=true&failOverReadOnly=false
+  redis:
+    timeout: 300s # redis超时时间，建议用docker起一个redis容器即可
+    host: 127.0.0.1
+    port: 6379
+    jedis:
+      pool:
+        max-idle: 8 #最大连接数
+        max-active: 20 # 最大连接数,-1为不限制
+        min-idle: 0 # 最小空闲数量
+        max-wait: 1s # 最大阻塞等待时间，-1为不限制
+  jpa:
+    database : MYSQL
+    show-sql : true
+    hibernate:
+      ddl-auto: update
+      naming:
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    properties:
+      hibernate:
+        show_sql: true
+        globally_quoted_identifiers: true
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+  elasticsearch:
+    ip: 192.168.64.210
+    rest:
+      uris: 192.168.64.210:9200
+#      username: root
+#      password: abc123
