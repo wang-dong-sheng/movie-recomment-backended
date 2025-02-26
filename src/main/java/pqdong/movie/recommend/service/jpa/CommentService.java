@@ -5,7 +5,7 @@
 //import org.apache.commons.lang3.StringUtils;
 //import org.apache.commons.lang3.tuple.Pair;
 //import org.springframework.stereotype.Service;
-//import pqdong.movie.recommend.data.dto.CommentSearchDto;
+//import pqdong.movie.recommend.data.dto.comments.CommentSearchDto;
 //import pqdong.movie.recommend.data.entity.CommentEs;
 //import pqdong.movie.recommend.data.repository.CommentEsRepo;
 //import pqdong.movie.recommend.redis.RedisApi;

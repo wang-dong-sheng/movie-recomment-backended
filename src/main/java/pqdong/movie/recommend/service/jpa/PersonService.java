@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;

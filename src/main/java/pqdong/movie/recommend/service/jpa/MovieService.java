@@ -1,11 +1,10 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.mahout.cf.taste.common.TasteException;
 import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.constant.ServerConstant;
 import pqdong.movie.recommend.data.dto.MovieSearchDto;
@@ -19,6 +18,7 @@ import pqdong.movie.recommend.data.repository.UserRepository;
 import pqdong.movie.recommend.domain.service.MovieRecommender;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
+import pqdong.movie.recommend.service.jpa.ConfigService;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;

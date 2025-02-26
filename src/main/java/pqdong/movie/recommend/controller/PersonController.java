@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.service.PersonService;
+import pqdong.movie.recommend.service.jpa.PersonService;
 
 import javax.annotation.Resource;
 

@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
@@ -15,6 +15,7 @@ import pqdong.movie.recommend.data.constant.UserConstant;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
 import pqdong.movie.recommend.redis.RedisApi;
+import pqdong.movie.recommend.service.jpa.ConfigService;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;

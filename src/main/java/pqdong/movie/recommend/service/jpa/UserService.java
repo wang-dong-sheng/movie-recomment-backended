@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import io.micrometer.core.instrument.util.StringUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -6,13 +6,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pqdong.movie.recommend.data.constant.UserConstant;
+import pqdong.movie.recommend.data.dto.user.UserInfo;
 import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.data.repository.UserRepository;
-import pqdong.movie.recommend.data.dto.UserInfo;
+
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
 import pqdong.movie.recommend.utils.Md5EncryptionHelper;
 import pqdong.movie.recommend.utils.RecommendUtils;
+import pqdong.movie.recommend.utils.ThreadLocalUtils;
 
 import javax.annotation.Resource;
 import java.util.HashMap;
@@ -42,57 +44,57 @@ public class UserService {
     @Resource
     private RedisApi redisApi;
 
-    public UserEntity updateUser(UserEntity user){
+    public UserEntity updateUser(UserEntity user) {
         // 如果用户名已经存在，不进行更新
         UserEntity userSearch = userRepository.findByUserNickName(user.getUsername());
         // nickname唯一
-        if (null != userSearch && !userSearch.getUserMd().equals(user.getUserMd())){
+        if (null != userSearch && !userSearch.getUserMd().equals(user.getUserMd())) {
             return null;
         }
         UserEntity userInfo = userRepository.findByUserMd(user.getUserMd());
         user.setPassword(userInfo.getPassword());
-        UserEntity userEntity =  userRepository.save(user);
-        if (userEntity != null){
+        UserEntity userEntity = userRepository.save(user);
+        if (userEntity != null) {
 //            elasticSearchService.updateAllComment(userEntity);
         }
         return userEntity;
     }
 
-    public String register(UserInfo user){
-        String code = redisApi.getString(RecommendUtils.getKey(UserConstant.PHONE_CODE, user.getPhone()));
-        if (StringUtils.isEmpty(code)){
-            return "验证码错误";
+    public String register(UserInfo user) {
+//        String code = redisApi.getString(RecommendUtils.getKey(UserConstant.PHONE_CODE, user.getPhone()));
+//        if (StringUtils.isEmpty(code)){
+//            return "验证码错误";
+//        } else {
+//          if (!code.equals(user.getCode())){
+//              return "验证码错误";
+//          }
+        UserEntity userEntity = userRepository.findByUserNickName(user.getUsername());
+        if (userEntity == null) {
+            userEntity = new UserEntity();
+            try {
+                BeanUtils.copyProperties(user, userEntity);
+            } catch (Exception e) {
+                log.error("copy properties error");
+                return "注册失败";
+            }
+            userEntity.setPassword(Md5EncryptionHelper.getMD5WithSalt(user.getPassword()));
+            userEntity.setUserMd(Md5EncryptionHelper.getMD5(Long.toString(System.currentTimeMillis())));
+            userEntity.setUserAvatar(RecommendUtils.getRandomAvatar(user.getUsername()));
+            userRepository.save(userEntity);
+            System.out.println(userEntity.toString());
+            return "success";
         } else {
-          if (!code.equals(user.getCode())){
-              return "验证码错误";
-          }
-          UserEntity userEntity = userRepository.findByUserNickName(user.getUsername());
-          if (userEntity == null){
-              userEntity = new UserEntity();
-              try {
-                  BeanUtils.copyProperties(user,userEntity);
-              } catch (Exception e){
-                  log.error("copy properties error");
-                  return "注册失败";
-              }
-              userEntity.setPassword(Md5EncryptionHelper.getMD5WithSalt(user.getPassword()));
-              userEntity.setUserMd(Md5EncryptionHelper.getMD5(Long.toString(System.currentTimeMillis())));
-              userEntity.setUserAvatar(RecommendUtils.getRandomAvatar(user.getUsername()));
-              userRepository.save(userEntity);
-              System.out.println(userEntity.toString());
-              return "success";
-          }else{
-              return "用户已经存在";
-          }
+            return "用户已经存在";
         }
+//        }
     }
 
     public UserEntity getUserInfo(String token) {
-        if (StringUtils.isEmpty(token)){
+        if (StringUtils.isEmpty(token)) {
             return null;
         }
         String userMd = redisApi.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
-        if (StringUtils.isEmpty(userMd)){
+        if (StringUtils.isEmpty(userMd)) {
             return null;
         }
         return userRepository.findByUserMd(userMd);
@@ -101,15 +103,17 @@ public class UserService {
     // 登录后需要前端设置header
     public Map<String, Object> login(String userName, String password) {
         UserEntity user = userRepository.findByUserNickName(userName);
-        if (user == null){
+        if (user == null) {
             return null;
         }
-        if (user.getPassword().equals(Md5EncryptionHelper.getMD5WithSalt(password))){
+        if (user.getPassword().equals(Md5EncryptionHelper.getMD5WithSalt(password))) {
             Map<String, Object> info = new HashMap<>();
             String token = RecommendUtils.genToken();
-            redisApi.setValue(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token) , user.getUserMd(), 7, TimeUnit.DAYS);
+            redisApi.setValue(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token), user.getUserMd(), 7, TimeUnit.DAYS);
             info.put("token", token);
             info.put("user", user);
+            //将当前用户id存入ThreadLocal中
+            ThreadLocalUtils.setCurrentId(user.getId());
             return info;
         } else {
             return null;
@@ -126,14 +130,14 @@ public class UserService {
         }
         entity.setUserAvatar(url);
         UserEntity userEntity = userRepository.save(entity);
-        if (userEntity != null){
+        if (userEntity != null) {
 //            elasticSearchService.updateAllComment(userEntity);
         }
         return url;
     }
 
     // 退出
-    public boolean logout(){
+    public boolean logout() {
         return true;
     }
 }

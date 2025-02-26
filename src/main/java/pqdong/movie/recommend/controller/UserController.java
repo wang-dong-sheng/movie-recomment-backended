@@ -1,16 +1,27 @@
 package pqdong.movie.recommend.controller;
 
+import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
+import pqdong.movie.recommend.common.PageRequest;
+import pqdong.movie.recommend.data.constant.UserConstant;
+import pqdong.movie.recommend.data.dto.user.UserQueryRequest;
+import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.data.entity.UserEntity;
-import pqdong.movie.recommend.data.dto.UserInfo;
+import pqdong.movie.recommend.data.dto.user.UserInfo;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.service.SmsService;
-import pqdong.movie.recommend.service.UserService;
+import pqdong.movie.recommend.service.jpa.SmsService;
+import pqdong.movie.recommend.service.jpa.UserService;
+import pqdong.movie.recommend.service.mabatis.UserMybatisService;
+
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -21,6 +32,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/user")
+@Slf4j
 public class UserController {
 
     @Resource
@@ -28,6 +40,8 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    private UserMybatisService userMybatisService;
 
     /**
      * @method getUserInfo 获取用户信息
@@ -114,4 +128,39 @@ public class UserController {
         return ResponseMessage.successMessage(userService.logout());
     }
 
+    /*
+    * 获取所有用户信息
+    * */
+    @LoginRequired
+    @GetMapping("/getAllUser")
+    public ResponseMessage getAllUser( PageRequest pageRequest){
+
+
+        return ResponseMessage.successMessage(userMybatisService.getAllUser(pageRequest));
+    }
+
+
+    /*
+    删除用户信息
+    * */
+    @DeleteMapping("/deleteUsers")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public ResponseMessage<Boolean> deleteUsers(@RequestBody List<Long> ids){
+
+
+        return ResponseMessage.successMessage(userMybatisService.deleteUsers(ids));
+    }
+
+    /**
+     * 按条件查询用户相关信息
+     *
+     */
+    @PostMapping("/filterUsers")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public ResponseMessage<Page<User>> filterUsers(@RequestBody UserQueryRequest userQueryRequest){
+
+        log.info(JSONUtil.toJsonStr(userQueryRequest));
+
+        return ResponseMessage.successMessage(userMybatisService.filterUsers(userQueryRequest));
+    }
 }

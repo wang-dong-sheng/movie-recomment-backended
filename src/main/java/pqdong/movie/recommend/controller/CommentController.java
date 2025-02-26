@@ -2,7 +2,7 @@
 //
 //import org.springframework.web.bind.annotation.*;
 //import pqdong.movie.recommend.annotation.LoginRequired;
-//import pqdong.movie.recommend.data.dto.CommentSearchDto;
+//import pqdong.movie.recommend.data.dto.comments.CommentSearchDto;
 //import pqdong.movie.recommend.data.entity.CommentEs;
 //import pqdong.movie.recommend.domain.util.ResponseMessage;
 //import pqdong.movie.recommend.service.CommentService;

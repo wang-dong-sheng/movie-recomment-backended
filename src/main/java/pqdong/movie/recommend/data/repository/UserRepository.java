@@ -7,6 +7,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import pqdong.movie.recommend.data.entity.UserEntity;
 
+import java.util.List;
+
 /**
  * @author pqdong
  * @description
@@ -21,6 +23,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
     @Query("SELECT e FROM UserEntity e WHERE e.username = :userNickName")
     UserEntity findByUserNickName(@Param("userNickName") String userNickName);
 
-    @Query("SELECT e FROM UserEntity e WHERE e.id = :userId")
-    UserEntity findOneByUserID(@Param("userId") Long userId);
+    @Query("SELECT e FROM UserEntity e WHERE e.id = :id")
+    UserEntity findOneByUserID(@Param("id") Long userId);
+
 }

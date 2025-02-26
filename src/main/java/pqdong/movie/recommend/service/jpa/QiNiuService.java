@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import com.qiniu.common.Zone;
 import com.qiniu.http.Response;
@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
+import pqdong.movie.recommend.service.jpa.ConfigService;
 
 
 /**

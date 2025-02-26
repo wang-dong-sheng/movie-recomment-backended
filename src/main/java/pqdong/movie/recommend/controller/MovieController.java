@@ -7,7 +7,7 @@ import pqdong.movie.recommend.data.dto.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.RatingDto;
 import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.service.MovieService;
+import pqdong.movie.recommend.service.jpa.MovieService;
 
 import javax.annotation.Resource;
 

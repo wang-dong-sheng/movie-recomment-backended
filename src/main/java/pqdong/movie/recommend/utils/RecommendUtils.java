@@ -5,7 +5,6 @@ import com.google.common.base.Joiner;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.servlet.http.HttpServletRequest;
@@ -15,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import pqdong.movie.recommend.data.dto.UserInfo;
+import pqdong.movie.recommend.data.dto.user.UserInfo;
 
 /**
  * RecommendUtils

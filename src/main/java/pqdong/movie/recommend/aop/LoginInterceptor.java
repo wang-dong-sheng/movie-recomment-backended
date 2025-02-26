@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.utils;
+package pqdong.movie.recommend.aop;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +13,7 @@ import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
+import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;

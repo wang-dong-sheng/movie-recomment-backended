@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.service;
+package pqdong.movie.recommend.service.jpa;
 
 import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.repository.ConfigRepository;
