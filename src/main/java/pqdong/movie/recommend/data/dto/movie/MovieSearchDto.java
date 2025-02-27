@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.data.dto;
+package pqdong.movie.recommend.data.dto.movie;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.constant.ServerConstant;
-import pqdong.movie.recommend.data.dto.MovieSearchDto;
+import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.RatingDto;
 import pqdong.movie.recommend.data.entity.MovieEntity;
 import pqdong.movie.recommend.data.entity.RatingEntity;
@@ -18,7 +18,6 @@ import pqdong.movie.recommend.data.repository.UserRepository;
 import pqdong.movie.recommend.domain.service.MovieRecommender;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
-import pqdong.movie.recommend.service.jpa.ConfigService;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;

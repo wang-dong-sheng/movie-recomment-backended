@@ -1,111 +1,95 @@
-package pqdong.movie.recommend.data.entity;
+package pqdong.movie.recommend.data.dto.movie;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+import pqdong.movie.recommend.common.PageRequest;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
+import java.util.List;
 
 /**
- * 
- * @TableName movie
+ * 用户查询请求
  */
-@TableName(value ="movie")
+
 @Data
-public class Movie implements Serializable {
+public class MovieQueryRequest extends PageRequest implements Serializable {
     /**
-     * 
+     *
      */
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 
-     */
-    private String actorIds;
-
-    /**
-     * 
+     *
      */
     private String actors;
 
     /**
-     * 
+     *
      */
     private String cover;
 
-    /**
-     * 
-     */
-    private String directorIds;
 
     /**
-     * 
+     *
      */
     private String directors;
 
     /**
-     * 
+     *
      */
     private String genres;
 
     /**
-     * 
+     *
      */
     private String languages;
 
     /**
-     * 
-     */
-    private Integer mins;
-
-    /**
-     * 
+     *
      */
     private String name;
 
     /**
-     * 
+     *
      */
     private String officialSite;
 
     /**
-     * 
+     *
      */
     private String regions;
 
     /**
-     * 
+     *
      */
     private Date releaseDate;
 
     /**
-     * 
+     *
      */
     private Double score;
 
-    /**
-     * 
-     */
-    private String storyline;
 
     /**
-     * 
+     *标签
      */
-    private String tags;
+    private List<String> tags;
 
     /**
-     * 
+     *
      */
     private Integer votes;
 
     /**
-     * 
+     *
      */
     private Integer year;
 
+    private Date[] rangeDate;
     /**
      * 是否上架
      * 1上架、0：下架
