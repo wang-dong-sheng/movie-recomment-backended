@@ -36,4 +36,8 @@
         tags,votes,year,
         movie_id,is_up
     </sql>
+
+    <select id="selectTopMovies" resultType="pqdong.movie.recommend.data.entity.Movie">
+        SELECT * FROM movie ORDER BY score desc LIMIT #{limit}
+    </select>
 </mapper>

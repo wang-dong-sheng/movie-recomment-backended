@@ -9,6 +9,7 @@ import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.data.entity.Rating;
+import pqdong.movie.recommend.data.entity.User;
 
 import java.util.List;
 
@@ -80,4 +81,11 @@ public interface MovieMybatisService extends IService<Movie> {
      * @return
      */
     Rating getScore(RatingUserRequest ratingUserRequest);
+
+    /**
+     * 推荐电影
+     * @param user
+     * @return
+     */
+    List<Movie> getRecommendMovie(User user);
 }

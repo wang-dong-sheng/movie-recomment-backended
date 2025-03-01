@@ -1,11 +1,13 @@
 package pqdong.movie.recommend.service.mabatis.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
+import lombok.extern.slf4j.Slf4j;
 import net.bytebuddy.implementation.bytecode.Throw;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -15,18 +17,23 @@ import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
-import pqdong.movie.recommend.data.entity.Movie;
-import pqdong.movie.recommend.data.entity.Rating;
-import pqdong.movie.recommend.data.entity.User;
+import pqdong.movie.recommend.data.entity.*;
+import pqdong.movie.recommend.data.repository.MovieMybatisRepository;
+import pqdong.movie.recommend.domain.service.MovieRecommender;
 import pqdong.movie.recommend.exception.ThrowUtils;
 import pqdong.movie.recommend.mapper.MovieMapper;
+import pqdong.movie.recommend.redis.RedisApi;
+import pqdong.movie.recommend.redis.RedisKeys;
 import pqdong.movie.recommend.service.mabatis.MovieMybatisService;
 import pqdong.movie.recommend.service.mabatis.RatingMybatisService;
+import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+import static pqdong.movie.recommend.data.constant.MovieConstant.RECOMMENT_SIZE;
+
 
 /**
  * @author champion
@@ -34,8 +41,16 @@ import java.util.List;
  * @createDate 2025-03-01 13:38:32
  */
 @Service
+@Slf4j
 public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
         implements MovieMybatisService {
+
+    @Resource
+    private MovieMybatisRepository movieMybatisRepository;
+    @Resource
+    private MovieRecommender movieRecommender;
+    @Resource
+    private RedisApi redisApi;
     @Resource
     private RatingMybatisService ratingMybatisService;
 
@@ -155,6 +170,48 @@ public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
         Rating ratingOne = ratingMybatisService.getOne(wrapper);
         return ratingOne;
     }
+
+    // 获取推荐电影
+    public List<Movie> getRecommendMovie(User user) {
+        // 用户已经登录
+        List<Movie> recommendMovies = new LinkedList<>();
+        String recommend = "";
+        if (user != null) {
+            // load缓存数据
+            recommend = redisApi.getString(RecommendUtils.getKey(RedisKeys.RECOMMEND, user.getUserMd()));
+            if (StringUtils.isEmpty(recommend)) {
+                // 用户打过分
+                List<Rating> ratingUserList = movieMybatisRepository.getRatingByUser(user);
+                if (ratingUserList!=null&&!ratingUserList.isEmpty()){
+                    // 基于用户推荐
+                    try {
+                        List<Long> movieIds = movieRecommender.itemBasedRecommender(user.getId(), RECOMMENT_SIZE);
+                        recommendMovies.addAll(this.listByIds(movieIds));
+                    } catch (Exception e) {
+                        log.info("{}",e);
+                    }
+                }
+            } else {
+                // 从缓存中直接加载
+                recommendMovies.addAll(JSONObject.parseArray(recommend, Movie.class));
+            }
+        } else{
+            // 用户未登录，推荐最高分数的4部电影
+            recommendMovies.addAll(movieMybatisRepository.getHightMovie(RECOMMENT_SIZE));
+        }
+        // 上述过程异常，或者用户未登录，推荐最高分数的4部电影
+        if (recommendMovies.isEmpty() && user != null){
+            recommendMovies.addAll(movieMybatisRepository.getHightMovie(RECOMMENT_SIZE));
+        }
+        if (StringUtils.isEmpty(recommend)){
+            redisApi.setValue(RecommendUtils.getKey(RedisKeys.RECOMMEND, user.getUserMd()),JSONObject.toJSONString(recommendMovies),1, TimeUnit.DAYS );
+        }
+        return recommendMovies;
+    }
+
+
+
+
 }
 
 

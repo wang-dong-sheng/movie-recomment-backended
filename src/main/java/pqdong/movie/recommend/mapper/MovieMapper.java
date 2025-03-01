@@ -3,6 +3,8 @@ package pqdong.movie.recommend.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import pqdong.movie.recommend.data.entity.Movie;
 
+import java.util.List;
+
 /**
 * @author champion
 * @description 针对表【movie】的数据库操作Mapper
@@ -10,6 +12,7 @@ import pqdong.movie.recommend.data.entity.Movie;
 * @Entity generator.domain.Movie
 */
 public interface MovieMapper extends BaseMapper<Movie> {
+    List<Movie> selectTopMovies(int limit);
 
 }
 

@@ -15,6 +15,7 @@ import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.data.entity.Rating;
+import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
 import pqdong.movie.recommend.service.jpa.MovieService;
@@ -123,21 +124,18 @@ public class MovieController {
     /**
      * @method getHighMovie 获取高分电影
      **/
-    @PostMapping("/recommend")
-    public ResponseMessage getRecommendMovie(@RequestBody(required = false) UserEntity user) {
-        return ResponseMessage.successMessage(movieService.getRecommendMovie(user));
-    }
-
-//    /*
-//     * 获取所有用户信息
-//     * */
-//    @LoginRequired
-//    @PostMapping("/getAllMovie")
-//    public ResponseMessage<Page<Movie>> getAllMovie(PageRequest pageRequest) {
-//
-//
-//        return ResponseMessage.successMessage(movieMybatisService.getAllMovie(pageRequest));
+//    @PostMapping("/recommend")
+//    public ResponseMessage getRecommendMovie(@RequestBody(required = false) UserEntity user) {
+//        return ResponseMessage.successMessage(movieService.getRecommendMovie(user));
 //    }
+
+    /**
+     * @method 推荐电影
+     **/
+    @PostMapping("/recommend")
+    public ResponseMessage getRecommendMovie(@RequestBody(required = false) User user) {
+        return ResponseMessage.successMessage(movieMybatisService.getRecommendMovie(user));
+    }
 
 
     /*

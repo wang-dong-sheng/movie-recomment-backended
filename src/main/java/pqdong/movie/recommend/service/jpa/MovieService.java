@@ -25,6 +25,9 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static pqdong.movie.recommend.data.constant.MovieConstant.RECOMMENT_SIZE;
+
+
 /**
  * MovieService
  *
@@ -54,7 +57,7 @@ public class MovieService {
     @Resource
     private MovieRecommender movieRecommender;
 
-    private final static int RECOMMENT_SIZE = 4;
+
 
 
     // 获取推荐电影
