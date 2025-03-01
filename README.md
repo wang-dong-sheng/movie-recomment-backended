@@ -18,9 +18,7 @@
 
 ### 架构
 - 项目组织： 前端后端分离，通过Restful接口传递数据
-- 代码组织：基于SpringBoot，采用gradle进行依赖管理
-- 部署方式：采用docker部署，通过nginx实现简单的负载均衡。
-- 大数据处理：采用ElasticSearch进行海量数据的全文检索
+- 代码组织：基于SpringBoot，采用maven进行依赖管理
 - 推荐算法： 采用Mahout基于用户的协同过滤算法和基于内容的协同过滤算法  
 
 ![项目结构图](http://ydschool-online.nos.netease.com/1582746970143Snipaste_2020-02-26_22-19-39.png)
@@ -31,13 +29,10 @@
 * mysql
 * es
 * redis
-* gradle
+* maven
 
 ### 其他说明及文档
-由于一直从事Golang开发，没怎么搞过java，所以决定此毕设使用java来做。其中的一些还代码有待商榷，会一点点完善。  
-其他文档具体可见 /doc目录      
+项目持续更新中，目前基本项目已经搭建好了
 
-### 数据库中数据来源声明 
-来源：[斗码小院公众号](http://www.csuldw.com/assets/articleImg/2019/code-main-fun.png)。  
-具体可见/doc/databaseSchema.md
+
 

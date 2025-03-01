@@ -4,12 +4,11 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.dto.comments.CommentSearchDto;
 import pqdong.movie.recommend.data.dto.comments.CommentsQueryRequest;
 import pqdong.movie.recommend.data.entity.Comments;
-import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.mapper.CommentsMapper;
-import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.service.mabatis.CommentsService;
 
 import java.util.Date;

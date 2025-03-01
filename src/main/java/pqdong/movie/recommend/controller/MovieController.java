@@ -7,13 +7,14 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
-import pqdong.movie.recommend.common.PageRequest;
 import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.dto.RatingDto;
+import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
+import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
 import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.entity.Movie;
+import pqdong.movie.recommend.data.entity.Rating;
 import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
 import pqdong.movie.recommend.service.jpa.MovieService;
@@ -59,9 +60,9 @@ public class MovieController {
      * @method getMovie 获取电影详情
      **/
     @GetMapping("/info")
-    public ResponseMessage getMovie(
+    public ResponseMessage getMovieById(
             @RequestParam(required = true, defaultValue = "0") Long movieId) {
-        return ResponseMessage.successMessage(movieService.getMovie(movieId));
+        return ResponseMessage.successMessage(movieMybatisService.getMovieById(movieId));
     }
 
     /**
@@ -100,10 +101,23 @@ public class MovieController {
      * @param rating 打分
      * @method updateScore 对电影评分
      **/
-    @PostMapping("/update")
+    @PostMapping("/setRating")
     @LoginRequired
-    public ResponseMessage updateScore(@RequestBody(required = true) RatingDto rating) {
-        return ResponseMessage.successMessage(movieService.updateScore(rating));
+    public ResponseMessage setScore(@RequestBody(required = true) RatingVo rating) {
+        return ResponseMessage.successMessage(movieMybatisService.setScore(rating));
+    }
+
+    /**
+     * 查看当前用户是否已经对该电影进行打分了
+     * 如果打过分数，那么返回对应打分rating数据
+     * 如果没打过分数那么返回空，用户前端判断
+     * @param ratingUserRequest
+     * @method updateScore 对电影评分
+     **/
+    @PostMapping("/getRating")
+    @LoginRequired
+    public ResponseMessage<Rating> getScore(@RequestBody(required = true) RatingUserRequest ratingUserRequest) {
+        return ResponseMessage.successMessage(movieMybatisService.getScore(ratingUserRequest));
     }
 
     /**
@@ -114,16 +128,16 @@ public class MovieController {
         return ResponseMessage.successMessage(movieService.getRecommendMovie(user));
     }
 
-    /*
-     * 获取所有用户信息
-     * */
-    @LoginRequired
-    @PostMapping("/getAllMovie")
-    public ResponseMessage<Page<Movie>> getAllMovie(PageRequest pageRequest) {
-
-
-        return ResponseMessage.successMessage(movieMybatisService.getAllMovie(pageRequest));
-    }
+//    /*
+//     * 获取所有用户信息
+//     * */
+//    @LoginRequired
+//    @PostMapping("/getAllMovie")
+//    public ResponseMessage<Page<Movie>> getAllMovie(PageRequest pageRequest) {
+//
+//
+//        return ResponseMessage.successMessage(movieMybatisService.getAllMovie(pageRequest));
+//    }
 
 
     /*
@@ -141,7 +155,6 @@ public class MovieController {
      * 按条件查询用户相关信息
      */
     @PostMapping("/filterMovies")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public ResponseMessage<Page<Movie>> filterMovies(@RequestBody MovieQueryRequest movieQueryRequest) {
 
         log.info(JSONUtil.toJsonStr(movieQueryRequest));

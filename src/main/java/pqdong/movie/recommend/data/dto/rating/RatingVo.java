@@ -1,15 +1,13 @@
-package pqdong.movie.recommend.data.dto;
+package pqdong.movie.recommend.data.dto.rating;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class RatingDto {
+public class RatingVo {
 
     private Long movieId;
 

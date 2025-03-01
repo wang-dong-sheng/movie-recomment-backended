@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pqdong.movie.recommend.mapper.RatingMapper">
+
+    <resultMap id="BaseResultMap" type="pqdong.movie.recommend.data.entity.Rating">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="movieId" column="movie_id" jdbcType="BIGINT"/>
+            <result property="rating" column="rating" jdbcType="FLOAT"/>
+            <result property="ratingTime" column="rating_time" jdbcType="TIMESTAMP"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="userMd5" column="user_md5" jdbcType="VARCHAR"/>
+            <result property="time" column="time" jdbcType="DATE"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        rating_id,movie_id,rating,
+        rating_time,user_id,user_md5,
+        time
+    </sql>
+</mapper>

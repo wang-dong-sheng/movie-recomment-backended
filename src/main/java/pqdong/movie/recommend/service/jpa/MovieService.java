@@ -8,7 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.constant.ServerConstant;
 import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
-import pqdong.movie.recommend.data.dto.RatingDto;
+import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.MovieEntity;
 import pqdong.movie.recommend.data.entity.RatingEntity;
 import pqdong.movie.recommend.data.entity.UserEntity;
@@ -179,17 +179,23 @@ public class MovieService {
     }
 
     // 对电影打分
-    public MovieEntity updateScore(RatingDto ratingDto) {
-        UserEntity user = userRepository.findOneByUserID(ratingDto.getUserId());
-        MovieEntity movie = movieRepository.findOneByMovieID(ratingDto.getMovieId());
+
+    /**
+     *
+     * @param ratingVo
+     * @return
+     */
+    public MovieEntity updateScore(RatingVo ratingVo) {
+        UserEntity user = userRepository.findOneByUserID(ratingVo.getUserId());
+        MovieEntity movie = movieRepository.findOneByMovieID(ratingVo.getMovieId());
         if (user == null){
             return movie;
         }
-        movie.setScore(ratingDto.getRating());
+        movie.setScore(ratingVo.getRating());
         RatingEntity rating = RatingEntity.builder()
-                .movieId(ratingDto.getMovieId())
-                .rating(ratingDto.getRating().intValue())
-                .userId(ratingDto.getUserId())
+                .movieId(ratingVo.getMovieId())
+                .rating(ratingVo.getRating().intValue())
+                .userId(ratingVo.getUserId())
                 .releaseDate(new Date())
                 .build();
         ratingRepository.save(rating);
