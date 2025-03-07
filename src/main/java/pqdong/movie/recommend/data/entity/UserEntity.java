@@ -60,7 +60,7 @@ public class UserEntity {
     @Column(name = "sex")
     private String sex;
 
-    @Column(name = "userRole")
+    @Column(name = "user_role")
     private String userRole;
 
     public List<String> getFormatTag(){

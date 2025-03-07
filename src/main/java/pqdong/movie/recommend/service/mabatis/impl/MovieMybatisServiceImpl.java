@@ -83,12 +83,17 @@ public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
             List<Movie> records = resPage.getRecords();
             ArrayList<Movie> movies = new ArrayList<>();
             for (Movie record : records) {
+                boolean isHave=true;
                 for (String tag : tags) {
-                    if (!record.getTags().contains(tag)) {
+                    if (record.getTags()==null||(record.getTags()!=null&&!record.getTags().contains(tag))) {
+                        isHave=false;
                         break;
                     }
                 }
-                movies.add(record);
+                if (isHave){
+                    movies.add(record);
+                }
+
                 resPage.setTotal(movies.size());
                 resPage.setRecords(movies);
             }

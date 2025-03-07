@@ -15,7 +15,7 @@
             <result property="motto" column="motto" jdbcType="VARCHAR"/>
             <result property="sex" column="sex" jdbcType="VARCHAR"/>
             <result property="userMd5" column="user_md5" jdbcType="VARCHAR"/>
-            <result property="userrole" column="userRole" jdbcType="VARCHAR"/>
+            <result property="userRole" column="user_role" jdbcType="VARCHAR"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
             <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
     </resultMap>
@@ -24,7 +24,7 @@
         id,password,user_avatar,
         user_md,user_nickname,user_tags,
         phone,motto,sex,
-        user_md5,userRole,create_time,
+        user_md5,user_role,create_time,
         update_time
     </sql>
 </mapper>

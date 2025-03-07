@@ -50,7 +50,7 @@ public class UserMybatisServiceImpl extends ServiceImpl<UserMapper, User>
 
         List<User> users = this.listByIds(ids);
         users.forEach((user)->{
-            String userrole = user.getUserrole();
+            String userrole = user.getUserRole();
             ThrowUtils.throwIf(UserConstant.ADMIN_ROLE.equals(userrole), ErrorCode.NO_AUTH_ERROR, "不能删除管理员");
         });
         //2.删除

@@ -69,7 +69,7 @@ public class User implements Serializable {
     /**
      * 用户角色
      */
-    private String userrole;
+    private String userRole;
 
     /**
      * 更新时间
