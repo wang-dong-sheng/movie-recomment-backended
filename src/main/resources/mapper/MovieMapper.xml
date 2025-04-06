@@ -23,7 +23,6 @@
             <result property="tags" column="tags" jdbcType="VARCHAR"/>
             <result property="votes" column="votes" jdbcType="INTEGER"/>
             <result property="year" column="year" jdbcType="INTEGER"/>
-            <result property="id" column="id" jdbcType="BIGINT"/>
             <result property="isUp" column="is_up" jdbcType="TINYINT"/>
     </resultMap>
 
@@ -33,8 +32,7 @@
         genres,languages,mins,
         name,official_site,regions,
         release_date,score,storyline,
-        tags,votes,year,
-        movie_id,is_up
+        tags,votes,year,is_up
     </sql>
 
     <select id="selectTopMovies" resultType="pqdong.movie.recommend.data.entity.Movie">

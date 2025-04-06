@@ -7,13 +7,10 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.springframework.stereotype.Repository;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.data.entity.Rating;
-import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.mapper.MovieMapper;
-import pqdong.movie.recommend.service.mabatis.MovieMybatisService;
 import pqdong.movie.recommend.service.mabatis.RatingMybatisService;
 
 import javax.annotation.Resource;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -36,9 +33,9 @@ public class MovieMybatisRepository {
     @Resource
     private MovieMapper movieMapper;
 
-    public List<Rating> getRatingByUser(User user){
+    public List<Rating> getRatingByUser(Long userId){
         QueryWrapper<Rating> wrapper = new QueryWrapper<>();
-        wrapper.eq(user.getId()!=null,"user_id",user.getId());
+        wrapper.eq(userId!=null,"user_id",userId);
         List<Rating> list = ratingMybatisService.list(wrapper);
         return list;
     }

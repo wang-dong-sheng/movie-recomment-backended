@@ -24,27 +24,7 @@ public class Comments implements Serializable {
     /**
      * 
      */
-    private Long userId;
-
-    /**
-     * 
-     */
-    private String userName;
-
-    /**
-     * 
-     */
-    private String useravatar;
-
-    /**
-     * 
-     */
-    private Integer movieId;
-
-    /**
-     * 
-     */
-    private String movieName;
+    private Long movieId;
 
     /**
      * 
@@ -61,7 +41,18 @@ public class Comments implements Serializable {
      */
     private Date commentTime;
 
+    /**
+     * 
+     */
+    private Long userId;
+
+    /**
+     * 打分
+     */
+    private Integer rating;
+
+    private String userMd;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
-
 }

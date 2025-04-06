@@ -25,8 +25,9 @@ public class CommentsServiceImpl extends ServiceImpl<CommentsMapper, Comments>
     //     获取评论列表
     public Page<Comments> getCommentList(CommentSearchDto commentSearchDto) {
 
-        Long userId = commentSearchDto.getUserId();
+//        String userId = commentSearchDto.getUserId();
         Long movieId = commentSearchDto.getMovieId();
+        String userMd = commentSearchDto.getUserMd();
         String movieName = commentSearchDto.getMovieName();
         Date[] dateRange = commentSearchDto.getDateRange();
         long current = commentSearchDto.getCurrent();
@@ -35,7 +36,8 @@ public class CommentsServiceImpl extends ServiceImpl<CommentsMapper, Comments>
         Page<Comments> commentsPage = new Page<>(current, pageSize);
         QueryWrapper<Comments> wrapper = new QueryWrapper<>();
         wrapper.eq(movieId!=null,"movie_id",movieId);
-        wrapper.eq(userId!=null,"user_id",userId);
+//        wrapper.eq(userId!=null,"user_id",userId);
+        wrapper.eq(StringUtils.isNotBlank(userMd),"user_md",userMd);
         wrapper.like(StringUtils.isNotBlank(movieName),"movie_name",movieName);
         wrapper.like(StringUtils.isNotBlank(userName),"user_name",userName);
         boolean isRange = dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null;

@@ -16,8 +16,8 @@ public class CommentSearchDto extends PageRequest implements Serializable {
     private Integer page;
 
     private String userName;
-    private Long userId;
-
+//    private String userId;
+    private String userMd;
     private Integer size;
 
     private Long movieId;

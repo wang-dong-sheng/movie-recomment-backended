@@ -6,19 +6,18 @@
 
     <resultMap id="BaseResultMap" type="pqdong.movie.recommend.data.entity.Comments">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="userId" column="user_id" jdbcType="BIGINT"/>
-            <result property="userName" column="user_name" jdbcType="VARCHAR"/>
-            <result property="useravatar" column="useravatar" jdbcType="VARCHAR"/>
-            <result property="movieId" column="movie_id" jdbcType="INTEGER"/>
-            <result property="movieName" column="movie_name" jdbcType="VARCHAR"/>
+            <result property="movieId" column="movie_id" jdbcType="BIGINT"/>
+        <result property="userId" column="user_id" jdbcType="BIGINT"/>
             <result property="content" column="content" jdbcType="VARCHAR"/>
             <result property="votes" column="votes" jdbcType="INTEGER"/>
             <result property="commentTime" column="comment_time" jdbcType="TIMESTAMP"/>
+            <result property="userMd" column="user_md" jdbcType="VARCHAR"/>
+            <result property="rating" column="rating" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,user_id,user_name,
-        useravatar,movie_id,movie_name,
-        content,votes,comment_time
+        id,movie_id,content,
+        votes,comment_time,user_id,
+        rating,user_md
     </sql>
 </mapper>

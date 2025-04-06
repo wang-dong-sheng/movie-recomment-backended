@@ -10,13 +10,14 @@
             <result property="rating" column="rating" jdbcType="FLOAT"/>
             <result property="ratingTime" column="rating_time" jdbcType="TIMESTAMP"/>
             <result property="userId" column="user_id" jdbcType="BIGINT"/>
-            <result property="userMd5" column="user_md5" jdbcType="VARCHAR"/>
+        <result property="userMd" column="user_md" jdbcType="VARCHAR"/>
             <result property="time" column="time" jdbcType="DATE"/>
+            <result property="ratingId" column="rating_id" jdbcType="BIGINT"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        rating_id,movie_id,rating,
-        rating_time,user_id,user_md5,
-        time
+        id,movie_id,rating,
+        rating_time,user_id,time,
+        rating_id,user_md
     </sql>
 </mapper>

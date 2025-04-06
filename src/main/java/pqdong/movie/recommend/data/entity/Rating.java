@@ -4,15 +4,16 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 
  * @TableName rating
  */
-@TableName(value ="rating")
+@TableName(value ="rating_test")
 @Data
 public class Rating implements Serializable {
     /**
@@ -29,7 +30,7 @@ public class Rating implements Serializable {
     /**
      * 
      */
-    private float rating;
+    private Double rating;
 
     /**
      * 
@@ -40,16 +41,17 @@ public class Rating implements Serializable {
      * 
      */
     private Long userId;
-
-    /**
-     * 
-     */
-    private String userMd5;
+    private String userMd;
 
     /**
      * 
      */
     private Date time;
+
+    /**
+     * 
+     */
+    private Long ratingId;
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;

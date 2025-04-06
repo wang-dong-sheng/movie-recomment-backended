@@ -1,7 +1,7 @@
 package pqdong.movie.recommend.service.mabatis;
 
-import pqdong.movie.recommend.data.entity.Rating;
 import com.baomidou.mybatisplus.extension.service.IService;
+import pqdong.movie.recommend.data.entity.Rating;
 
 /**
 * @author champion

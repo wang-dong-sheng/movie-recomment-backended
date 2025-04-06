@@ -4,9 +4,10 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-import lombok.Data;
 
 /**
  * 
@@ -106,9 +107,9 @@ public class Movie implements Serializable {
      */
     private Integer year;
 
+
     /**
-     * 是否上架
-     * 1上架、0：下架
+     * 上架下架（1：上架，2：下架）
      */
     private Short isUp;
 

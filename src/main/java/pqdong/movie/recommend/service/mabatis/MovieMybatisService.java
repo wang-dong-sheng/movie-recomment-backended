@@ -10,6 +10,7 @@ import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.data.entity.Rating;
 import pqdong.movie.recommend.data.entity.User;
+import pqdong.movie.recommend.enums.MovieRecommentEnum;
 
 import java.util.List;
 
@@ -84,8 +85,9 @@ public interface MovieMybatisService extends IService<Movie> {
 
     /**
      * 推荐电影
-     * @param user
+     * @param userId
      * @return
      */
-    List<Movie> getRecommendMovie(User user);
+    List<Movie> getRecommendMovie(Long userId, MovieRecommentEnum type);
+
 }

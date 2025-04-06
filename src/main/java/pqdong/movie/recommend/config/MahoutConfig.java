@@ -1,7 +1,5 @@
 package pqdong.movie.recommend.config;
 
-import com.mysql.jdbc.jdbc2.optional.MysqlDataSource;
-import org.apache.mahout.cf.taste.impl.model.file.FileDataModel;
 import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -14,13 +12,14 @@ import javax.sql.DataSource;
 @Configuration
 public class MahoutConfig {
 
+
     @Autowired
     private DataSource dataSource;
 
     @Bean(autowire = Autowire.BY_NAME,value = "mySQLDataModel")
     public DataModel getMySQLJDBCDataModel(){
-        return new MySQLJDBCDataModel(dataSource,"rating","user_id",
-                "movie_id","rating", "time");
+        return new MySQLJDBCDataModel(dataSource,"rating_test","user_id",
+                "movie_id","rating", "rating_time");
     }
 
 

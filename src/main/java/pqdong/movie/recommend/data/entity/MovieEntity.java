@@ -63,7 +63,7 @@ public class MovieEntity {
 
     //评分
     @Column(name = "score")
-    private Float score;
+    private Double score;
 
     //投票数
     @Column(name = "votes")

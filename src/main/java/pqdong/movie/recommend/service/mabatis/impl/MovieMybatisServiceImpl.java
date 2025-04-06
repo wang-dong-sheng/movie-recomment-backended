@@ -20,6 +20,7 @@ import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.*;
 import pqdong.movie.recommend.data.repository.MovieMybatisRepository;
 import pqdong.movie.recommend.domain.service.MovieRecommender;
+import pqdong.movie.recommend.enums.MovieRecommentEnum;
 import pqdong.movie.recommend.exception.ThrowUtils;
 import pqdong.movie.recommend.mapper.MovieMapper;
 import pqdong.movie.recommend.redis.RedisApi;
@@ -142,7 +143,7 @@ public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
     public RatingVo setScore(RatingVo ratingVo) {
         Long movieId = ratingVo.getMovieId();
         Long userId = ratingVo.getUserId();
-        Float rating = ratingVo.getRating();
+        Double rating = ratingVo.getRating();
         //1.查询当前用户是否已经打过分数了
         QueryWrapper<Rating> wrapper = new QueryWrapper<>();
         wrapper.eq(movieId != null, "movie_id", movieId);
@@ -176,40 +177,53 @@ public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
         return ratingOne;
     }
 
-    // 获取推荐电影
-    public List<Movie> getRecommendMovie(User user) {
+    // 选择对应的推荐算法
+    public List<Movie> getRecommendMovie(Long userId, MovieRecommentEnum type) {
         // 用户已经登录
         List<Movie> recommendMovies = new LinkedList<>();
         String recommend = "";
-        if (user != null) {
+        if (userId != null) {
             // load缓存数据
-            recommend = redisApi.getString(RecommendUtils.getKey(RedisKeys.RECOMMEND, user.getUserMd()));
+            recommend = redisApi.getString(RedisKeys.RECOMMEND+":"+type.getValue()+":"+userId);
             if (StringUtils.isEmpty(recommend)) {
                 // 用户打过分
-                List<Rating> ratingUserList = movieMybatisRepository.getRatingByUser(user);
-                if (ratingUserList!=null&&!ratingUserList.isEmpty()){
+                List<Rating> ratingUserList = movieMybatisRepository.getRatingByUser(userId);
+                if (ratingUserList != null && !ratingUserList.isEmpty()) {
+                    List<Long> movieIds;
                     // 基于用户推荐
                     try {
-                        List<Long> movieIds = movieRecommender.itemBasedRecommender(user.getId(), RECOMMENT_SIZE);
-                        recommendMovies.addAll(this.listByIds(movieIds));
+                        if (type == MovieRecommentEnum.USER) {
+                            movieIds= movieRecommender.userBasedRecommender(userId, RECOMMENT_SIZE);
+                        }else if (type == MovieRecommentEnum.CONTENT){
+                            movieIds= movieRecommender.itemBasedRecommender(userId, RECOMMENT_SIZE);
+
+                        }else {
+                            //更适合物品相似度计算（尤其适合隐式反馈数据），也
+                            movieIds= movieRecommender.itemBaseLike(userId, RECOMMENT_SIZE);
+                        }
+                        if (movieIds!=null&&!movieIds.isEmpty()){
+                            recommendMovies.addAll(this.listByIds(movieIds));
+                        }
+
+
                     } catch (Exception e) {
-                        log.info("{}",e);
+                        log.info("{}", e);
                     }
                 }
             } else {
                 // 从缓存中直接加载
                 recommendMovies.addAll(JSONObject.parseArray(recommend, Movie.class));
             }
-        } else{
+        } else {
             // 用户未登录，推荐最高分数的4部电影
             recommendMovies.addAll(movieMybatisRepository.getHightMovie(RECOMMENT_SIZE));
         }
         // 上述过程异常，或者用户未登录，推荐最高分数的4部电影
-        if (recommendMovies.isEmpty() && user != null){
+        if (recommendMovies.isEmpty() && userId != null) {
             recommendMovies.addAll(movieMybatisRepository.getHightMovie(RECOMMENT_SIZE));
         }
-        if (StringUtils.isEmpty(recommend)){
-            redisApi.setValue(RecommendUtils.getKey(RedisKeys.RECOMMEND, user.getUserMd()),JSONObject.toJSONString(recommendMovies),1, TimeUnit.DAYS );
+        if (StringUtils.isEmpty(recommend)) {
+            redisApi.setValue(RedisKeys.RECOMMEND+":"+type.getValue()+userId, JSONObject.toJSONString(recommendMovies), 1, TimeUnit.DAYS);
         }
         return recommendMovies;
     }

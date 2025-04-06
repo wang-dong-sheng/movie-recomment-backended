@@ -1,5 +1,4 @@
 package pqdong.movie.recommend.controller;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -7,9 +6,7 @@ import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
 import pqdong.movie.recommend.data.dto.comments.CommentSearchDto;
-import pqdong.movie.recommend.data.dto.comments.CommentsQueryRequest;
 import pqdong.movie.recommend.data.entity.Comments;
-import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
 import pqdong.movie.recommend.service.mabatis.CommentsService;
 

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
+import pqdong.movie.recommend.data.dto.movie.MovieRecommendVo;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
@@ -15,8 +16,6 @@ import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.data.entity.Rating;
-import pqdong.movie.recommend.data.entity.User;
-import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
 import pqdong.movie.recommend.service.jpa.MovieService;
 import pqdong.movie.recommend.service.mabatis.MovieMybatisService;
@@ -130,13 +129,12 @@ public class MovieController {
 //    }
 
     /**
-     * @method 推荐电影
+     * @method 基于用户的推荐
      **/
     @PostMapping("/recommend")
-    public ResponseMessage getRecommendMovie(@RequestBody(required = false) User user) {
-        return ResponseMessage.successMessage(movieMybatisService.getRecommendMovie(user));
+    public ResponseMessage getRecommendMovie(@RequestBody(required = false) MovieRecommendVo movieRecommendVo) {
+        return ResponseMessage.successMessage(movieMybatisService.getRecommendMovie(movieRecommendVo.getUserId(), movieRecommendVo.getType()));
     }
-
 
     /*
     删除用户信息

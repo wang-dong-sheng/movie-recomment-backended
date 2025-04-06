@@ -11,7 +11,8 @@ public class RatingVo {
 
     private Long movieId;
 
+    private String userMd;
     private Long userId;
 
-    private Float rating;
+    private Double rating;
 }

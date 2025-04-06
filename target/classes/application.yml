@@ -15,7 +15,7 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver # mysql驱动
     username: root # 你的数据库用户名
     password: abc123 # 你的数据库密码，url中添加数据库地址和端口
-    url: jdbc:mysql://localhost:3306/movie?useSSL=false&serverTimezone=Asia/Shanghai&autoReconnect=true&failOverReadOnly=false
+    url: jdbc:mysql://localhost:3306/movietest?useSSL=false&serverTimezone=Asia/Shanghai&autoReconnect=true&failOverReadOnly=false
   redis:
     database: 1
     host: 127.0.0.1
