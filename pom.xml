@@ -41,6 +41,17 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>0.10.2.1</version> <!-- 与您的 Kafka 服务端版本一致 -->
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId> <!-- 避免日志依赖冲突 -->
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.github.jsqlparser</groupId>
             <artifactId>jsqlparser</artifactId>
             <version>4.6</version>
