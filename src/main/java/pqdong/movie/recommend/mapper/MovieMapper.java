@@ -13,7 +13,7 @@ import java.util.List;
 */
 public interface MovieMapper extends BaseMapper<Movie> {
     List<Movie> selectTopMovies(int limit);
-
+    List<Movie> selectLimit(int limit);
 }
 
 

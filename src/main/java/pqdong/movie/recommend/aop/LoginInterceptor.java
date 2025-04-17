@@ -11,8 +11,10 @@ import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.data.repository.UserRepository;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
+import pqdong.movie.recommend.mongo.service.UserMongoService;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
+import pqdong.movie.recommend.temp.UserTemp;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.PostConstruct;
@@ -33,6 +35,8 @@ import java.lang.reflect.Method;
 public class LoginInterceptor extends HandlerInterceptorAdapter {
 
     private static LoginInterceptor loginInterceptor;
+    @Resource
+    private UserMongoService userMongoService;
 
     @Resource
     private RedisApi redis;
@@ -59,12 +63,12 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
             if (StringUtils.isEmpty(token)){
                 throw new MyException(ResultEnum.NEED_LOGIN);
             }
-            String userMd = loginInterceptor.redis.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
-            if (StringUtils.isEmpty(userMd)){
+            String userId = loginInterceptor.redis.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
+            if (StringUtils.isEmpty(userId)){
                 // 没有获取到redis中的信息
                 throw new MyException(ResultEnum.NEED_LOGIN);
             }
-            UserEntity user = loginInterceptor.userRepository.findByUserMd(userMd);
+            UserTemp user = loginInterceptor.userMongoService.findByUID(Integer.valueOf(userId));
             if (user == null) {
                 // token无法获取到用户信息代表未登陆
                 throw new MyException(ResultEnum.NEED_LOGIN);

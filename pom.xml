@@ -3,13 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>movie.recommend</groupId>
-    <artifactId>movie-recommend</artifactId>
+    <artifactId>movie-recomment-backended</artifactId>
     <version>1.8.0</version>
 
     <packaging>jar</packaging>
 
-    <name>Movie Recommend Project</name>
-    <description>A movie recommendation project</description>
+    <name>movie-recomment-backended</name>
+    <description>A movieMongo recommendation project</description>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -40,10 +40,70 @@
     </repositories>
 
     <dependencies>
+<!-- ============================       新加依赖==========================================-->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+        <!-- 核心依赖 -->
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>5.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.elasticsearch.plugin</groupId>
+            <artifactId>transport-netty4-client</artifactId>
+            <version>5.6.4</version>
+        </dependency>
+
+
+        <!-- 其他客户端依赖也需对齐版本 -->
+        <dependency>
+            <groupId>org.elasticsearch.client</groupId>
+            <artifactId>transport</artifactId>
+            <version>5.6.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>3.6.0</version>
+        </dependency>
+
+        <!-- fasterxml -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.10.1</version>
+        </dependency>
+
+        <!-- fasterxml end -->
+<!-- ============================       新加依赖==========================================-->
+<!--        <dependency>-->
+<!--            <groupId>org.elasticsearch.client</groupId>-->
+<!--            <artifactId>transport</artifactId>-->
+<!--            <version>5.6.2</version>-->
+<!--        </dependency>-->
+<!--        <dependency>-->
+<!--            <groupId>org.mongodb</groupId>-->
+<!--            <artifactId>mongodb-driver</artifactId>-->
+<!--            <version>3.5.0</version>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-            <version>0.10.2.1</version> <!-- 与您的 Kafka 服务端版本一致 -->
+            <version>0.10.2.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId> <!-- 避免日志依赖冲突 -->

@@ -27,4 +27,7 @@
         user_md5,user_role,create_time,
         update_time
     </sql>
+    <select id="selectLimitUser" resultType="pqdong.movie.recommend.data.entity.User">
+        SELECT * FROM user LIMIT #{num}
+    </select>
 </mapper>

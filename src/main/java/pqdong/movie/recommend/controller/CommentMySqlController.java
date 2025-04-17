@@ -6,9 +6,12 @@ import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
 import pqdong.movie.recommend.data.dto.comments.CommentSearchDto;
+import pqdong.movie.recommend.data.dto.comments.CommentsDto;
 import pqdong.movie.recommend.data.entity.Comments;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
+import pqdong.movie.recommend.newService.CommentsNewService;
 import pqdong.movie.recommend.service.mabatis.CommentsService;
+import pqdong.movie.recommend.temp.CommentsTemp;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -18,15 +21,17 @@ import java.util.List;
 @Slf4j
 public class CommentMySqlController {
 
+//    @Resource
+//    private CommentsService commentService;
     @Resource
-    private CommentsService commentService;
+    private CommentsNewService commentsNewService;
 
     /**
      * @method getCommentList 获取电影标签
      */
     @PostMapping("/list")
-    public ResponseMessage<Page<Comments>> getCommentList(@RequestBody CommentSearchDto commentSearchDto) {
-        return ResponseMessage.successMessage(commentService.getCommentList(commentSearchDto));
+    public ResponseMessage<Page<CommentsDto>> getCommentList(@RequestBody CommentSearchDto commentSearchDto) {
+        return ResponseMessage.successMessage(commentsNewService.getCommentList(commentSearchDto));
     }
 
     /**
@@ -34,8 +39,8 @@ public class CommentMySqlController {
      */
     @PostMapping("/submit")
     @LoginRequired
-    public ResponseMessage submitComment(@RequestBody Comments comments) {
-        commentService.save(comments);
+    public ResponseMessage submitComment(@RequestBody CommentsTemp comments) {
+        commentsNewService.addComment(comments);
         return ResponseMessage.successMessage(comments);
     }
     /**
@@ -44,8 +49,8 @@ public class CommentMySqlController {
     @DeleteMapping("/deleteComments")
     @LoginRequired
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public ResponseMessage<Boolean> deleteComments(@RequestBody List<Long> ids) {
-        boolean b = commentService.removeBatchByIds(ids);
+    public ResponseMessage<Boolean> deleteComments(@RequestBody List<String> ids) {
+        boolean b = commentsNewService.deleteComments(ids);
         log.info("");
         return ResponseMessage.successMessage(b);
     }

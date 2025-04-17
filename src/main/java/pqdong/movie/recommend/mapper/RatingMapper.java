@@ -3,6 +3,8 @@ package pqdong.movie.recommend.mapper;
 import pqdong.movie.recommend.data.entity.Rating;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
 * @author champion
 * @description 针对表【rating】的数据库操作Mapper
@@ -10,7 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 * @Entity pqdong.movie.recommend.data.entity.Rating
 */
 public interface RatingMapper extends BaseMapper<Rating> {
-
+    List<Rating> selectNumRating();
 }
 
 

@@ -20,7 +20,7 @@ public class Movie implements Serializable {
      * 
      */
     @TableId(type = IdType.AUTO)
-    private Long id;
+    private Long movieId;
 
     /**
      * 

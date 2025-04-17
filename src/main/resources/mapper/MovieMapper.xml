@@ -5,7 +5,7 @@
 <mapper namespace="pqdong.movie.recommend.mapper.MovieMapper">
 
     <resultMap id="BaseResultMap" type="pqdong.movie.recommend.data.entity.Movie">
-            <id property="id" column="id" jdbcType="BIGINT"/>
+            <id property="movieId" column="movie_id" jdbcType="BIGINT"/>
             <result property="actorIds" column="actor_ids" jdbcType="VARCHAR"/>
             <result property="actors" column="actors" jdbcType="VARCHAR"/>
             <result property="cover" column="cover" jdbcType="VARCHAR"/>
@@ -37,5 +37,8 @@
 
     <select id="selectTopMovies" resultType="pqdong.movie.recommend.data.entity.Movie">
         SELECT * FROM movie ORDER BY score desc LIMIT #{limit}
+    </select>
+    <select id="selectLimit" resultType="pqdong.movie.recommend.data.entity.Movie">
+        SELECT * FROM movie   LIMIT #{limit}
     </select>
 </mapper>

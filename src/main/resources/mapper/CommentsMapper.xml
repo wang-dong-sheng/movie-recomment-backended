@@ -20,4 +20,18 @@
         votes,comment_time,user_id,
         rating,user_md
     </sql>
+    <select id="selectCommentsByRating" resultType="pqdong.movie.recommend.data.entity.Comments">
+        SELECT *
+        FROM comments
+        WHERE user_id IN (
+            SELECT user_id
+            FROM rating
+            WHERE user_id IN (
+                SELECT user_id
+                FROM rating
+                GROUP BY user_id
+                HAVING COUNT(*) BETWEEN 10 AND 19
+            ) AND rating > 3
+        )
+    </select>
 </mapper>

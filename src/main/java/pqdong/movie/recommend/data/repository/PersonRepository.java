@@ -23,4 +23,7 @@ public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
     @Query("SELECT e FROM PersonEntity e WHERE e.id = :personId")
     PersonEntity findOneByPersonID(@Param("personId") long personId);
+
+    @Query(nativeQuery = true, value = "select * from person where 1=1")
+    List<PersonEntity> findAllPerson();
 }

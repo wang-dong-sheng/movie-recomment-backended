@@ -20,4 +20,12 @@
         rating_time,user_id,time,
         rating_id,user_md
     </sql>
+    <select id="selectNumRating" resultType="pqdong.movie.recommend.data.entity.Rating">
+        select user_id,movie_id,rating,rating_time
+        from rating
+        where user_id in(select user_id
+                         from rating
+                         group by user_id
+                         having count(*)BETWEEN 10 AND 19) and rating >3
+    </select>
 </mapper>

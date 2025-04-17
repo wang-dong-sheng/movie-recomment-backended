@@ -32,7 +32,7 @@ public class MovieRecommendApplication {
             JSQLPARSER_IN_CLASSPATH.setAccessible(true);
             JSQLPARSER_IN_CLASSPATH.setBoolean(null, true);
         } catch (Exception e) {
-            log.error(e.getMessage(), e);
+//            log.error(e.getMessage(), e);
 
         }
         SpringApplication.run(MovieRecommendApplication.class, args);

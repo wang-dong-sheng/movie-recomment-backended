@@ -109,7 +109,7 @@ public class MovieMybatisServiceImpl extends ServiceImpl<MovieMapper, Movie>
         Short tag = movieUpVo.getTag();
         Long movieId = movieUpVo.getMovieId();
         Movie movie = new Movie();
-        movie.setId(movieId);
+        movie.setMovieId(movieId);
         movie.setIsUp(tag);
         boolean b = this.updateById(movie);
         return b;

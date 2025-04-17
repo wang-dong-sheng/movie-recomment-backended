@@ -24,7 +24,7 @@ public class PersonEntity {
     @Id
     @Column(name = "person_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
+    private Integer personId;
 
     // 演员名称
     @Column(name = "name")

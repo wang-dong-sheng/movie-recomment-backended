@@ -4,42 +4,136 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.dto.movie.MovieRecommendVo;
-import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
-import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
+import pqdong.movie.recommend.data.dto.movie.MovieRecommendVo;
 import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
+import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
+import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.Movie;
-import pqdong.movie.recommend.data.entity.Rating;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.service.jpa.MovieService;
-import pqdong.movie.recommend.service.mabatis.MovieMybatisService;
+import pqdong.movie.recommend.mongo.model.domain.MovieMongo;
+import pqdong.movie.recommend.mongo.model.recom.Recommendation;
+import pqdong.movie.recommend.mongo.model.request.MovieHybridRecommendationRequest;
+import pqdong.movie.recommend.mongo.model.request.MovieRecommendationRequest;
+import pqdong.movie.recommend.mongo.model.request.TopGenresRecommendationRequest;
+import pqdong.movie.recommend.mongo.model.request.UserRecommendationRequest;
+import pqdong.movie.recommend.mongo.service.*;
+import pqdong.movie.recommend.newService.MovieNewService;
+import pqdong.movie.recommend.temp.MovieTemp;
+import pqdong.movie.recommend.temp.RatingTemp;
+import pqdong.movie.recommend.temp.UserTemp;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/movie")
 @Slf4j
 public class MovieController {
+    @Resource
+    private MovieNewService movieNewService;
 
-    @Resource
-    private MovieService movieService;
-    @Resource
-    private MovieMybatisService movieMybatisService;
+//    @Resource
+//    private MovieService movieService;
+//    @Resource
+//    private MovieMybatisService movieMybatisService;
+//====================================================新加mongo，es相关以及各类推荐相关========================
+   @Resource
+    private UserMongoService userMongoService;
+
+
+
+
+    @Autowired
+    private RecommenderService recommenderService;
+    @Autowired
+    private MovieMongoService movieMongoService;
+    @Autowired
+    private RatingService ratingService;
+    @Autowired
+    private TagService tagService;
+
+    /**
+     * 获取推荐的电影【实时推荐6 + 内容推荐4】
+     * 默认推荐4部电影
+     * @param username
+     * @param
+     * @return
+     */
+    // TODO:   bug 混合推荐结果中，基于内容的推荐，基于MID，而非UID
+    @GetMapping("/guss" )
+    @ResponseBody
+    public ResponseMessage<List<Movie>> getGuessMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num) {
+        UserTemp user = userMongoService.findByUsername(username);
+        //去实时推荐表中找，如果没有那么说明属于冷启动，那么进行基于内容得推荐
+        List<Recommendation> recommendations = recommenderService.getHybridRecommendations(new MovieHybridRecommendationRequest(user.getUserId(),num));
+        //冷启动，基于内容推荐
+        if(recommendations.size()<4){
+            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
+            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num-recommendations.size()));
+        }
+        List<MovieMongo> hybirdRecommendeMovieMongos = movieMongoService.getHybirdRecommendeMovies(recommendations);
+        List<Movie> movies = hybirdRecommendeMovieMongos.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
+        return ResponseMessage.successMessage(movies);
+    }
+
+    /**
+     *基于用户相似矩阵的电影推荐
+     * @param username
+     * @param model
+     * @return
+     */
+    @GetMapping("/wish" )
+    @ResponseBody
+    public ResponseMessage<List<Movie>> getWishMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num, Model model) {
+        UserTemp user = userMongoService.findByUsername(username);
+        List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new UserRecommendationRequest(user.getUserId(),num));
+        if(recommendations.size()==0){
+            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
+            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num));
+        }
+        List<MovieMongo> recommendeMovies = movieMongoService.getRecommendeMovies(recommendations);
+        List<Movie> movies = recommendeMovies.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
+
+        return ResponseMessage.successMessage(movies);
+    }
+    /**
+     * 获取电影详细页面相似的电影集合：基于电影相似性的推荐
+     * @param
+     * @param
+     * @return
+     */
+    @GetMapping("/same")
+    @ResponseBody
+    public ResponseMessage<List<Movie>> getSameMovie(int movieId, @RequestParam(value = "num", defaultValue = "4")int num) {
+        List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new MovieRecommendationRequest(movieId,num));
+        List<MovieMongo> recommendeMovies = movieMongoService.getRecommendeMovies(recommendations);
+        List<Movie> movies = recommendeMovies.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
+
+        return ResponseMessage.successMessage(movies);
+    }
+//    ====================================================新加mongo，es相关以及各类推荐相关========================
+
+
+
+//    ============================================基于mysql的相关操作================================
 
     /**
      * @method getMovieTags 获取电影标签
      */
-    @GetMapping("/tag")
-    public ResponseMessage get() {
-        return ResponseMessage.successMessage(movieService.getMovieTags());
-    }
+//    @GetMapping("/tag")
+//    public ResponseMessage get() {
+////        return ResponseMessage.successMessage(movieNewService.getMovieTags());
+//    }
 
     /**
      * @param key  关键字
@@ -52,7 +146,7 @@ public class MovieController {
             @RequestParam(required = false, defaultValue = "") String key,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "12") int size) {
-        return ResponseMessage.successMessage(movieService.getAllMovie(key, page, size));
+        return ResponseMessage.successMessage(movieNewService.getAllMovie(key, page, size));
     }
 
     /**
@@ -62,7 +156,7 @@ public class MovieController {
     @GetMapping("/info")
     public ResponseMessage getMovieById(
             @RequestParam(required = true, defaultValue = "0") Long movieId) {
-        return ResponseMessage.successMessage(movieMybatisService.getMovieById(movieId));
+        return ResponseMessage.successMessage(movieNewService.getMovieById(movieId));
     }
 
     /**
@@ -72,7 +166,7 @@ public class MovieController {
     @GetMapping("/person/attend")
     public ResponseMessage getPersonAttendMovie(
             @RequestParam(required = true, defaultValue = "0") String personName) {
-        return ResponseMessage.successMessage(movieService.getPersonAttendMovie(personName));
+        return ResponseMessage.successMessage(movieNewService.getPersonAttendMovie(personName));
     }
 
     /**
@@ -82,9 +176,9 @@ public class MovieController {
     @PostMapping("/listByTag")
     public ResponseMessage getMovieListByTag(@RequestBody(required = true) MovieSearchDto info) {
         if (info.getTags().isEmpty() && StringUtils.isEmpty(info.getContent())) {
-            return ResponseMessage.successMessage(movieService.getAllMovie("", info.getPage(), info.getSize()));
+            return ResponseMessage.successMessage(movieNewService.getAllMovie("", info.getPage(), info.getSize()));
         } else {
-            return ResponseMessage.successMessage(movieService.searchMovies(info));
+            return ResponseMessage.successMessage(movieNewService.searchMovies(info));
         }
     }
 
@@ -104,7 +198,7 @@ public class MovieController {
     @PostMapping("/setRating")
     @LoginRequired
     public ResponseMessage setScore(@RequestBody(required = true) RatingVo rating) {
-        return ResponseMessage.successMessage(movieMybatisService.setScore(rating));
+        return ResponseMessage.successMessage(movieNewService.setScore(rating));
     }
 
     /**
@@ -116,8 +210,8 @@ public class MovieController {
      **/
     @PostMapping("/getRating")
     @LoginRequired
-    public ResponseMessage<Rating> getScore(@RequestBody(required = true) RatingUserRequest ratingUserRequest) {
-        return ResponseMessage.successMessage(movieMybatisService.getScore(ratingUserRequest));
+    public ResponseMessage<RatingTemp> getScore(@RequestBody(required = true) RatingUserRequest ratingUserRequest) {
+        return ResponseMessage.successMessage(movieNewService.getScore(ratingUserRequest));
     }
 
     /**
@@ -133,7 +227,7 @@ public class MovieController {
      **/
     @PostMapping("/recommend")
     public ResponseMessage getRecommendMovie(@RequestBody(required = false) MovieRecommendVo movieRecommendVo) {
-        return ResponseMessage.successMessage(movieMybatisService.getRecommendMovie(movieRecommendVo.getUserId(), movieRecommendVo.getType()));
+        return ResponseMessage.successMessage(movieNewService.getRecommendMovie(movieRecommendVo.getUserId(), movieRecommendVo.getType()));
     }
 
     /*
@@ -144,18 +238,18 @@ public class MovieController {
     public ResponseMessage<Boolean> deleteUsers(@RequestBody List<Long> ids) {
 
 
-        return ResponseMessage.successMessage(movieMybatisService.deleteMovies(ids));
+        return ResponseMessage.successMessage(movieNewService.deleteMovies(ids));
     }
 
     /**
      * 按条件查询用户相关信息
      */
     @PostMapping("/filterMovies")
-    public ResponseMessage<Page<Movie>> filterMovies(@RequestBody MovieQueryRequest movieQueryRequest) {
+    public ResponseMessage<Page<MovieTemp>> filterMovies(@RequestBody MovieQueryRequest movieQueryRequest) {
 
         log.info(JSONUtil.toJsonStr(movieQueryRequest));
 
-        return ResponseMessage.successMessage(movieMybatisService.filterMovies(movieQueryRequest));
+        return ResponseMessage.successMessage(movieNewService.filterMovies(movieQueryRequest));
     }
 
 
@@ -168,7 +262,7 @@ public class MovieController {
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public ResponseMessage<Boolean> isUpMovie(@RequestBody MovieUpVo movieUpVo) {
 
-        return ResponseMessage.successMessage(movieMybatisService.isUpMovie(movieUpVo));
+        return ResponseMessage.successMessage(movieNewService.isUpMovie(movieUpVo));
     }
 
     /**
@@ -178,9 +272,9 @@ public class MovieController {
      */
     @PostMapping("/addMovie")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public ResponseMessage<Boolean> addMovie(@RequestBody Movie movie) {
+    public ResponseMessage<Boolean> addMovie(@RequestBody MovieTemp movie) {
 
-        return ResponseMessage.successMessage(movieMybatisService.addMovie(movie));
+        return ResponseMessage.successMessage(movieNewService.addMovie(movie));
     }
 
     /**
@@ -190,9 +284,9 @@ public class MovieController {
      */
     @PostMapping("/updateMovie")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public ResponseMessage<Boolean> updateMovie(@RequestBody Movie movie) {
+    public ResponseMessage<Boolean> updateMovie(@RequestBody MovieTemp movie) {
 
-        return ResponseMessage.successMessage(movieMybatisService.updateMovie(movie));
+        return ResponseMessage.successMessage(movieNewService.updateMovie(movie));
     }
 
 }

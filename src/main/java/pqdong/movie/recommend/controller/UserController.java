@@ -15,9 +15,17 @@ import pqdong.movie.recommend.data.entity.User;
 import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.data.dto.user.UserInfo;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
+import pqdong.movie.recommend.mongo.model.request.LoginUserRequest;
+import pqdong.movie.recommend.mongo.model.request.RegisterUserRequest;
+import pqdong.movie.recommend.mongo.service.UserMongoService;
+import pqdong.movie.recommend.newService.UserNewService;
+import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.service.jpa.SmsService;
 import pqdong.movie.recommend.service.jpa.UserService;
 import pqdong.movie.recommend.service.mabatis.UserMybatisService;
+import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.utils.Md5EncryptionHelper;
+import pqdong.movie.recommend.utils.RecommendUtils;
 
 
 import javax.annotation.Resource;
@@ -34,33 +42,39 @@ import java.util.Map;
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-
+    @Resource
+    private RedisApi redisApi;
     @Resource
     private SmsService smsService;
 
+//    @Resource
+//    private UserService userService;
+//    @Resource
+//    private UserMybatisService userMybatisService;
+//    @Resource
+//    private UserMongoService userMongoService;
+
     @Resource
-    private UserService userService;
-    @Resource
-    private UserMybatisService userMybatisService;
+    private UserNewService userNewService;
 
     /**
      * @method getUserInfo 获取用户信息
      */
     @GetMapping("/userInfo")
     public ResponseMessage getCourseInfo(@RequestParam(required = true) String token) {
-        return ResponseMessage.successMessage(userService.getUserInfo(token));
+        return ResponseMessage.successMessage(userNewService.getUserInfo(token));
     }
 
     /**
      * @method updateUserInfo 修改用户信息
      */
     @PostMapping("/userInfo")
-    public ResponseMessage updateUserInfo(@RequestBody(required = true) UserEntity user) {
-        UserEntity userInfo = userService.updateUser(user);
-        if (null == userInfo){
+    public ResponseMessage updateUserInfo(@RequestBody(required = true) UserTemp user) {
+        userNewService.updateUser(user);
+        if (null == user){
             return ResponseMessage.failedMessage("昵称已经存在，请跟换昵称！");
         }
-        return ResponseMessage.successMessage(userService.updateUser(user));
+        return ResponseMessage.successMessage(userNewService.updateUser(user));
     }
 
     /**
@@ -68,11 +82,15 @@ public class UserController {
      */
     @PostMapping("/register")
     public ResponseMessage register(@RequestBody UserInfo user){
-        String result = userService.register(user);
-        if (result.equals("success")){
+        if(userNewService.checkUserExist(user.getUsername())){
+            return ResponseMessage.failedMessage("该用户名已被注册");
+        }
+
+        boolean b = userNewService.registerUser(user);
+        if (b){
             return ResponseMessage.successMessage("success");
         } else{
-            return ResponseMessage.failedMessage(result);
+            return ResponseMessage.failedMessage("注册失败");
         }
     }
 
@@ -81,7 +99,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseMessage userLogin(@RequestBody UserInfo user) {
-        Map<String, Object> info = userService.login(user.getUsername(), user.getPassword());
+        Map<String, Object> info = userNewService.login(user);
         if (info != null){
             return ResponseMessage.successMessage(info);
         } else {
@@ -111,7 +129,7 @@ public class UserController {
     @PostMapping("/avatar")
     @LoginRequired
     public ResponseMessage upload(@RequestParam("userMd") String userMd, @RequestParam("avatar") MultipartFile avatar) {
-        String url = userService.uploadAvatar(userMd, avatar);
+        String url = userNewService.uploadAvatar(userMd, avatar);
         if (StringUtils.contains(url,"http")) {
             return ResponseMessage.successMessage(url);
         } else {
@@ -125,7 +143,7 @@ public class UserController {
     @PostMapping("/logout")
     @LoginRequired
     public ResponseMessage logout() {
-        return ResponseMessage.successMessage(userService.logout());
+        return ResponseMessage.successMessage(userNewService.logout());
     }
 
     /*
@@ -136,7 +154,7 @@ public class UserController {
     public ResponseMessage getAllUser( PageRequest pageRequest){
 
 
-        return ResponseMessage.successMessage(userMybatisService.getAllUser(pageRequest));
+        return ResponseMessage.successMessage(userNewService.getAllUser(pageRequest));
     }
 
 
@@ -148,7 +166,7 @@ public class UserController {
     public ResponseMessage<Boolean> deleteUsers(@RequestBody List<Long> ids){
 
 
-        return ResponseMessage.successMessage(userMybatisService.deleteUsers(ids));
+        return ResponseMessage.successMessage(userNewService.deleteUsers(ids));
     }
 
     /**
@@ -157,10 +175,10 @@ public class UserController {
      */
     @PostMapping("/filterUsers")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public ResponseMessage<Page<User>> filterUsers(@RequestBody UserQueryRequest userQueryRequest){
+    public ResponseMessage<Page<UserTemp>> filterUsers(@RequestBody UserQueryRequest userQueryRequest){
 
         log.info(JSONUtil.toJsonStr(userQueryRequest));
 
-        return ResponseMessage.successMessage(userMybatisService.filterUsers(userQueryRequest));
+        return ResponseMessage.successMessage(userNewService.filterUsers(userQueryRequest));
     }
 }
