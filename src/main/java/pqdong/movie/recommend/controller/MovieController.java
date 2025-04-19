@@ -70,21 +70,21 @@ public class MovieController {
      * @return
      */
     // TODO:   bug 混合推荐结果中，基于内容的推荐，基于MID，而非UID
-    @GetMapping("/guss" )
-    @ResponseBody
-    public ResponseMessage<List<Movie>> getGuessMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num) {
-        UserTemp user = userMongoService.findByUsername(username);
-        //去实时推荐表中找，如果没有那么说明属于冷启动，那么进行基于内容得推荐
-        List<Recommendation> recommendations = recommenderService.getHybridRecommendations(new MovieHybridRecommendationRequest(user.getUserId(),num));
-        //冷启动，基于内容推荐
-        if(recommendations.size()<4){
-            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
-            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num-recommendations.size()));
-        }
-        List<MovieMongo> hybirdRecommendeMovieMongos = movieMongoService.getHybirdRecommendeMovies(recommendations);
-        List<Movie> movies = hybirdRecommendeMovieMongos.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
-        return ResponseMessage.successMessage(movies);
-    }
+//    @GetMapping("/guss" )
+//    @ResponseBody
+//    public ResponseMessage<List<Movie>> getGuessMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num) {
+//        UserTemp user = userMongoService.findByUsername(username);
+//        //去实时推荐表中找，如果没有那么说明属于冷启动，那么进行基于内容得推荐
+//        List<Recommendation> recommendations = recommenderService.getHybridRecommendations(new MovieHybridRecommendationRequest(user.getUserId(),num));
+//        //冷启动，基于内容推荐
+//        if(recommendations.size()<4){
+//            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
+//            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num-recommendations.size()));
+//        }
+//        List<MovieMongo> hybirdRecommendeMovieMongos = movieMongoService.getHybirdRecommendeMovies(recommendations);
+//        List<Movie> movies = hybirdRecommendeMovieMongos.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
+//        return ResponseMessage.successMessage(movies);
+//    }
 
     /**
      *基于用户相似矩阵的电影推荐

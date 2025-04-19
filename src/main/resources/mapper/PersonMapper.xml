@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="pqdong.movie.recommend.mapper.PersonMapper">
+
+    <resultMap id="BaseResultMap" type="pqdong.movie.recommend.temp.PersonTemp">
+            <id property="personId" column="person_id" jdbcType="BIGINT"/>
+            <result property="biography" column="biography" jdbcType="VARCHAR"/>
+            <result property="birth" column="birth" jdbcType="VARCHAR"/>
+            <result property="birthPlace" column="birth_place" jdbcType="VARCHAR"/>
+            <result property="otherName" column="other_name" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="nameEn" column="name_en" jdbcType="VARCHAR"/>
+            <result property="constellation" column="constellation" jdbcType="VARCHAR"/>
+            <result property="profession" column="profession" jdbcType="VARCHAR"/>
+            <result property="sex" column="sex" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        personId,biography,birth,
+        birthPlace,otherName,name,
+        nameEn,constellation,profession,
+        sex
+    </sql>
+</mapper>

@@ -1,5 +1,6 @@
 package pqdong.movie.recommend.kafka;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.stereotype.Component;
@@ -7,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 @Component
+@Slf4j
 public class RatingMessageProducer {
     // 获取单例生产者
     Producer<String, String> producer = KafkaSingletonProducer.getInstance();
@@ -19,7 +21,7 @@ public class RatingMessageProducer {
      * @param rating 评分值（如4.5）
      * @param timestamp 时间戳（秒级）
      */
-    public void sendRatingMessage(String topic, String uid, String mid, double rating, long timestamp) {
+    public void sendRatingMessage(String topic, String uid, String mid, double rating, Integer timestamp) {
         // 拼接消息内容：uid|mid|rating|timestamp
         String value = String.format("%s|%s|%.1f|%d", uid, mid, rating, timestamp);
         
@@ -30,11 +32,13 @@ public class RatingMessageProducer {
             // 同步发送（阻塞直到收到ACK）
             producer.send(record, (metadata, exception) -> {
                 if (exception != null) {
-                    System.err.printf("消息发送失败: Topic=%s, Value=%s, Error=%s%n",
+                    log.error("消息发送失败: Topic=%s, Value=%s, Error=%s%n",
                                       topic, value, exception.getMessage());
                 } else {
-                    System.out.printf("发送成功 → Topic:%s Partition:%d Offset:%d%n",
-                                     metadata.topic(), metadata.partition(), metadata.offset());
+                   log.info("发送成功 → Topic:{} Partition:{} Offset:{}",
+                            metadata.topic(),
+                            metadata.partition(),
+                            metadata.offset());
                 }
             }).get(); // get()确保同步等待[3](@ref)
         } catch (InterruptedException | ExecutionException e) {

@@ -16,6 +16,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pqdong.movie.recommend.data.dto.movie.RecommendVo;
 import pqdong.movie.recommend.mongo.model.recom.Recommendation;
 import pqdong.movie.recommend.mongo.model.request.*;
 import pqdong.movie.recommend.mongo.utils.Constant;
@@ -41,14 +42,14 @@ public class RecommenderService {
     // 协同过滤推荐【电影相似性】
     private List<Recommendation> findMovieCFRecs(int mid, int maxItems) {
         MongoCollection<Document> movieRecsCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_MOVIE_RECS_COLLECTION);
-        Document movieRecs = movieRecsCollection.find(new Document("mid", mid)).first();
+        Document movieRecs = movieRecsCollection.find(new Document("movieId", mid)).first();
         return parseRecs(movieRecs, maxItems);
     }
 
     // 协同过滤推荐【用户电影矩阵】
     private List<Recommendation> findUserCFRecs(int uid, int maxItems) {
         MongoCollection<Document> movieRecsCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_USER_RECS_COLLECTION);
-        Document userRecs = movieRecsCollection.find(new Document("uid", uid)).first();
+        Document userRecs = movieRecsCollection.find(new Document("userId", uid)).first();
         return parseRecs(userRecs, maxItems);
     }
 
@@ -63,9 +64,9 @@ public class RecommenderService {
     }
 
     // 实时推荐
-    private List<Recommendation> findStreamRecs(int uid,int maxItems){
+    public List<Recommendation> findStreamRecs(int uid,int maxItems){
         MongoCollection<Document> streamRecsCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_STREAM_RECS_COLLECTION);
-        Document streamRecs = streamRecsCollection.find(new Document("uid", uid)).first();
+        Document streamRecs = streamRecsCollection.find(new Document("userId", uid)).first();
         return parseRecs(streamRecs, maxItems);
     }
 
@@ -75,7 +76,7 @@ public class RecommenderService {
             return recommendations;
         ArrayList<Document> recs = document.get("recs", ArrayList.class);
         for (Document recDoc : recs) {
-            recommendations.add(new Recommendation(recDoc.getInteger("mid"), recDoc.getDouble("score")));
+            recommendations.add(new Recommendation(recDoc.getInteger("movieId"), recDoc.getDouble("score")));
         }
         Collections.sort(recommendations, new Comparator<Recommendation>() {
             @Override
@@ -95,26 +96,31 @@ public class RecommenderService {
     private List<Recommendation> parseESResponse(SearchResponse response) {
         List<Recommendation> recommendations = new ArrayList<>();
         for (SearchHit hit : response.getHits()) {
-            recommendations.add(new Recommendation((int) hit.getSourceAsMap().get("mid"), (double) hit.getScore()));
+            recommendations.add(new Recommendation((int) hit.getSourceAsMap().get("movieId"), (double) hit.getScore()));
         }
         return recommendations;
     }
 
     // 混合推荐算法
-    private List<Recommendation> findHybridRecommendations(int productId, int maxItems) {
+    private List<Recommendation> findHybridRecommendations(int userId, int maxItems) {
         List<Recommendation> hybridRecommendations = new ArrayList<>();
-
-        List<Recommendation> cfRecs = findMovieCFRecs(productId, maxItems);
-        for (Recommendation recommendation : cfRecs) {
-            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * CF_RATING_FACTOR));
+////基于物品的
+//        List<Recommendation> cfRecs = findMovieCFRecs(productId, maxItems);
+//        for (Recommendation recommendation : cfRecs) {
+//            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * CF_RATING_FACTOR));
+//        }
+//        基于用户的
+        List<Recommendation> userCFRecs = findUserCFRecs(userId, maxItems);
+        for (Recommendation recommendation : userCFRecs) {
+            hybridRecommendations.add(new Recommendation(recommendation.getMid(),recommendation.getScore()*CF_RATING_FACTOR));
         }
-
-        List<Recommendation> cbRecs = findContentBasedMoreLikeThisRecommendations(productId, maxItems);
-        for (Recommendation recommendation : cbRecs) {
-            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * CB_RATING_FACTOR));
-        }
-
-        List<Recommendation> streamRecs = findStreamRecs(productId,maxItems);
+////这里需要和es交互
+//        List<Recommendation> cbRecs = findContentBasedMoreLikeThisRecommendations(productId, maxItems);
+//        for (Recommendation recommendation : cbRecs) {
+//            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * CB_RATING_FACTOR));
+//        }
+//实时推荐
+        List<Recommendation> streamRecs = findStreamRecs(userId,maxItems);
         for (Recommendation recommendation : streamRecs) {
             hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * SR_RATING_FACTOR));
         }
@@ -146,8 +152,8 @@ public class RecommenderService {
         return findContentBasedSearchRecommendations(request.getText(), request.getSum());
     }
 
-    public List<Recommendation> getHybridRecommendations(MovieHybridRecommendationRequest request) {
-        return findHybridRecommendations(request.getMid(), request.getSum());
+    public List<Recommendation> getHybridRecommendations(RecommendVo request) {
+        return findHybridRecommendations(request.getUserId(), request.getNum());
     }
 
 
@@ -158,7 +164,7 @@ public class RecommenderService {
 
         List<Recommendation> recommendations = new ArrayList<>();
         for (Document document : documents) {
-            recommendations.add(new Recommendation(document.getInteger("mid"), 0D));
+            recommendations.add(new Recommendation(document.getInteger("movieId"), 0D));
         }
         return recommendations;
     }
@@ -171,7 +177,7 @@ public class RecommenderService {
 
         List<Recommendation> recommendations = new ArrayList<>();
         for (Document document : documents) {
-            recommendations.add(new Recommendation(document.getInteger("mid"), 0D));
+            recommendations.add(new Recommendation(document.getInteger("movieId"), 0D));
         }
         return recommendations;
     }

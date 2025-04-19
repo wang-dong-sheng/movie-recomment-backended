@@ -24,14 +24,15 @@ import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.domain.service.MovieRecommender;
 import pqdong.movie.recommend.enums.MovieRecommentEnum;
 import pqdong.movie.recommend.exception.ThrowUtils;
-import pqdong.movie.recommend.mongo.model.domain.MovieMongo;
+import pqdong.movie.recommend.kafka.KafkaConstant;
+import pqdong.movie.recommend.kafka.RatingMessageProducer;
+import pqdong.movie.recommend.mongo.model.recom.Recommendation;
 import pqdong.movie.recommend.mongo.utils.Constant;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
 import pqdong.movie.recommend.temp.MovieTemp;
 import pqdong.movie.recommend.temp.RatingTemp;
-import pqdong.movie.recommend.temp.UserTemp;
-import pqdong.movie.recommend.utils.RecommendUtils;
+import redis.clients.jedis.Jedis;
 
 import javax.annotation.Resource;
 import java.io.IOException;
@@ -44,6 +45,10 @@ import static pqdong.movie.recommend.data.constant.MovieConstant.RECOMMENT_SIZE;
 @Service
 @Slf4j
 public class MovieNewService {
+    @Autowired
+    private Jedis jedis;
+    @Resource
+    private RatingMessageProducer ratingMessageProducer;
 
     @Autowired
     private MongoClient mongoClient;
@@ -201,7 +206,8 @@ public class MovieNewService {
             rating.setUserId(ratingVo.getUserId().intValue());
             rating.setMovieId(ratingVo.getMovieId().intValue());
             rating.setRating(ratingVo.getRating());
-            rating.setRatingTime(new Date());
+
+            rating.setTimestamp((int)System.currentTimeMillis()/1000);
 
             if (existingRating != null) {
                 // 更新评分
@@ -217,7 +223,11 @@ public class MovieNewService {
 
             // 更新电影平均分
             updateMovieAverageScore(ratingVo.getMovieId());
-            
+            //发送消息到kafka
+            ratingMessageProducer.sendRatingMessage(KafkaConstant.RATING_TOPIC,String.valueOf(ratingVo.getUserId()),String.valueOf(ratingVo.getMovieId()),ratingVo.getRating(),(int)System.currentTimeMillis()/1000);
+
+            //更新redis评分
+            updateRedis(ratingVo);
             return ratingVo;
         } catch (Exception e) {
             log.error("评分失败", e);
@@ -231,13 +241,13 @@ public class MovieNewService {
         for (Document doc : documents) {
             ratings.add(documentToRating(doc));
         }
-        
+
         if (!ratings.isEmpty()) {
             double averageScore = ratings.stream()
                 .mapToDouble(RatingTemp::getRating)
                 .average()
                 .orElse(0.0);
-            
+
             getMovieCollection().updateOne(
                 new Document("movieId", movieId),
                 new Document("$set", new Document("score", averageScore))
@@ -250,7 +260,7 @@ public class MovieNewService {
             new Document("userId", ratingUserRequest.getUserId())
             .append("movieId", ratingUserRequest.getMovieId())
         ).first();
-        
+
         if (document == null || document.isEmpty()) {
             return null;
         }
@@ -370,7 +380,6 @@ public class MovieNewService {
                 .collect(Collectors.toCollection(LinkedList::new)));
         return result;
     }
-// ... existing code ...
 
     public Map<String, Object> searchMovies(MovieSearchDto info) {
         List<MovieTemp> allMovies = new ArrayList<>();
@@ -433,7 +442,6 @@ public class MovieNewService {
                 .collect(Collectors.toCollection(LinkedList::new)));
         return result;
     }
-// ... existing code ...
 
     public List<MovieTemp> getPersonAttendMovie(String personName) {
         List<MovieTemp> movies = new ArrayList<>();
@@ -458,5 +466,33 @@ public class MovieNewService {
                 .collect(Collectors.toCollection(LinkedList::new));
     }
 
-// ... existing code ...
+    public List<MovieTemp> getHybirdRecommendeMovies(List<Recommendation> recommendations){
+        List<Integer> ids = new ArrayList<>();
+        for (Recommendation rec: recommendations) {
+            ids.add(rec.getMid());
+        }
+        return getMovies(ids);
+    }
+    public List<MovieTemp> getMovies(List<Integer> mids){
+        FindIterable<Document> documents = getMovieCollection().find(Filters.in("movieId",mids));
+        List<MovieTemp> movieMongos = new ArrayList<>();
+        for (Document document: documents) {
+            movieMongos.add(documentToMovie(document));
+        }
+        return movieMongos;
+    }
+    public List<MovieTemp> getRecommendeMovies(List<Recommendation> recommendations){
+        List<Integer> ids = new ArrayList<>();
+        for (Recommendation rec: recommendations) {
+            ids.add(rec.getMid());
+        }
+        return getMovies(ids);
+    }
+    //评分集合重始终保留用户评分过的REDIS_MOVIE_RATING_QUEUE_SIZE条评分
+    private void updateRedis(RatingVo rating) {
+        if (jedis.exists("userId:" + rating.getUserId()) && jedis.llen("userId:" + rating.getUserId()) >= Constant.REDIS_MOVIE_RATING_QUEUE_SIZE) {
+            jedis.rpop("userId:" + rating.getUserId());
+        }
+        jedis.lpush("userId:" + rating.getUserId(), rating.getMovieId() + ":" + rating.getRating());
+    }
 }

@@ -5,15 +5,17 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
+import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.result.DeleteResult;
+import pqdong.movie.recommend.temp.PersonTemp;
+import pqdong.movie.recommend.service.mabatis.impl.PersonMybatisServiceImpl;
 import org.bson.Document;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import pqdong.movie.recommend.data.entity.Comments;
 import pqdong.movie.recommend.data.entity.Movie;
-import pqdong.movie.recommend.data.entity.PersonEntity;
 import pqdong.movie.recommend.data.entity.Rating;
 import pqdong.movie.recommend.data.repository.PersonRepository;
 import pqdong.movie.recommend.mapper.CommentsMapper;
@@ -34,12 +36,8 @@ import pqdong.movie.recommend.utils.RandomStringUtils;
 
 import javax.annotation.Resource;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author Mr.Wang
@@ -66,6 +64,9 @@ class UserMongoServiceTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Resource
+    private PersonMybatisServiceImpl personMybatisService;
 
     @Resource
     private PersonRepository personRepository;
@@ -98,7 +99,7 @@ class UserMongoServiceTest {
     }
 
     private MongoCollection<Document> getPersonCollection() {
-        if (null == userCollection)
+        if (null == personCollection)
             personCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection("Person");
         return personCollection;
     }
@@ -152,8 +153,8 @@ class UserMongoServiceTest {
     @Test
     void savePersonToMongo() {
         MongoCollection<Document> personCollection1 = getPersonCollection();
-        List<PersonEntity> allPerson = personRepository.findAllByCountLimit(1000);
-        List<Document> collect = allPerson.stream().map(person -> Document.parse(JSONUtil.toJsonStr(person))).collect(Collectors.toList());
+        List<PersonTemp> list = personMybatisService.list();
+        List<Document> collect = list.stream().map(personTemp -> Document.parse(JSONUtil.toJsonStr(personTemp))).collect(Collectors.toList());
         personCollection1.insertMany(collect);
     }
 
@@ -186,7 +187,7 @@ class UserMongoServiceTest {
             ratingTemp.setUserId(Integer.valueOf(String.valueOf(rating.getUserId())));
             ratingTemp.setMovieId(Integer.valueOf(String.valueOf(rating.getMovieId())));
             ratingTemp.setRating(rating.getRating());
-            ratingTemp.setRatingTime(rating.getRatingTime());
+            ratingTemp.setTimestamp((int) (rating.getRatingTime().getTime() / 1000));
             return ratingTemp;
 
         }).collect(Collectors.toList());
@@ -261,9 +262,9 @@ class UserMongoServiceTest {
             MovieTemp movieTemp = BeanUtil.copyProperties(movie, MovieTemp.class);
             movieTemp.setMovieId(movieIdMap.get(i));
             resMovies.add(movieTemp);
-            int j=i;
+            int j = i;
             comments.stream().forEach(comments1 -> {
-                if (comments1.getMovieId().equals(movie.getMovieId())){
+                if (comments1.getMovieId().equals(movie.getMovieId())) {
                     CommentsTemp commentsTemp = BeanUtil.copyProperties(comments1, CommentsTemp.class);
                     commentsTemp.setMovieId(movieIdMap.get(j));
                     resComments.add(commentsTemp);
@@ -299,5 +300,47 @@ class UserMongoServiceTest {
         System.out.println("======================数据完成====================");
 
 
+    }
+
+    //    提取所有的电影标签类型，用于冷启动时可以给用户选择自己喜爱的类型
+    @Test
+    void getAllGeners() {
+        MongoCollection<Document> movieCollection = getMovieCollection();
+
+        // 使用HashSet自动去重
+        HashMap<String,Integer> allGeners = new HashMap<String,Integer>();
+
+        // 查询所有包含genres字段的文档
+        FindIterable<Document> documents = movieCollection.find(
+                new Document("genres", new Document("$exists", true)) // 确保字段存在
+        );
+
+        // 遍历文档并提取类型
+        for (Document doc : documents) {
+            String genres = doc.getString("genres");
+            if (genres != null && !genres.isEmpty()) {
+                // 分割字符串并清理空格
+                String[] splitGeners = genres.split("/");
+                for (String genre : splitGeners) {
+                    String cleanedGenre = genre.trim();
+                    if (!cleanedGenre.isEmpty()) {
+                        allGeners.put(cleanedGenre,allGeners.getOrDefault(cleanedGenre,0)+1);
+                    }
+                }
+            }
+        }
+// 使用Stream API按值降序排序
+        List<Map.Entry<String, Integer>> sortedEntries = allGeners.entrySet().stream()
+                .sorted(Map.Entry.<String, Integer>comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toList());
+
+// 转换为有序Map（LinkedHashMap保持插入顺序）
+        Map<String, Integer> sortedMap = new LinkedHashMap<>();
+        sortedEntries.forEach(entry -> sortedMap.put(entry.getKey(), entry.getValue()));
+
+        Set<String> genersSet = sortedMap.keySet();
+        genersSet.forEach((item)->{
+            System.out.print(item+" ");
+        });
     }
 }

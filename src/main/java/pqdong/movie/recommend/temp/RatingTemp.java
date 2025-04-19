@@ -19,7 +19,7 @@ public class RatingTemp {
     private Integer userId;
     private Integer movieId;
     private Double rating;
-    private Date ratingTime;
+    private Integer timestamp;
 }
 
 

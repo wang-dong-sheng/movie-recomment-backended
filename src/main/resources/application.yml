@@ -71,6 +71,12 @@ mongo:
   port: 27017
 redis:
   host: localhost
+  database: 0
 
-
-
+logging:
+  level:
+    # 关闭所有ES的WARN日志
+    org.elasticsearch: ERROR
+    # 保留其他包的INFO及以上日志（可选，根据需求调整）
+    root: INFO
+#    com.your.package: DEBUG  # 自定义包的日志级别

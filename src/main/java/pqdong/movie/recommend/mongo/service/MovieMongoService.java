@@ -72,7 +72,7 @@ public class MovieMongoService {
     }
 
     public List<MovieMongo> getMovies(List<Integer> mids){
-        FindIterable<Document> documents = getMovieCollection().find(Filters.in("mid",mids));
+        FindIterable<Document> documents = getMovieCollection().find(Filters.in("movieId",mids));
         List<MovieMongo> movieMongos = new ArrayList<>();
         for (Document document: documents) {
             movieMongos.add(documentToMovie(document));

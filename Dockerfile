@@ -6,6 +6,6 @@ COPY . .
 RUN gradle bootJar
 
 FROM java:8
-COPY --from=builder /build/libs/movie-recommend-* app.jar
+COPY --from=builder /build/libs/movieMongo-recommend-* app.jar
 EXPOSE 10015
 ENTRYPOINT ["java", "-jar", "app.jar"]

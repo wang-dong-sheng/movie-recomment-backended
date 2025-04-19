@@ -8,6 +8,7 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import com.mongodb.client.result.UpdateResult;
 import com.mongodb.util.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -71,19 +72,19 @@ public class UserNewService {
     public Page<UserTemp> getAllUser(PageRequest pageRequest) {
         long pageSize = pageRequest.getPageSize();
         long current = pageRequest.getCurrent();
-        
+
         FindIterable<Document> documents = getUserCollection()
-            .find()
-            .skip((int) ((current - 1) * pageSize))
-            .limit((int) pageSize);
-            
+                .find()
+                .skip((int) ((current - 1) * pageSize))
+                .limit((int) pageSize);
+
         long total = getUserCollection().count();
-        
+
         List<UserTemp> users = new ArrayList<>();
         for (Document doc : documents) {
             users.add(documentToUser(doc));
         }
-        
+
         Page<UserTemp> page = new Page<>(current, pageSize);
         page.setTotal(total);
         page.setRecords(users);
@@ -116,7 +117,7 @@ public class UserNewService {
         String userNickname = userQueryRequest.getUserNickname();
         Long userId = userQueryRequest.getUserId();
         Date[] dateRange = userQueryRequest.getDateRange();
-        
+
         List<Document> conditions = new ArrayList<>();
         if (StringUtils.isNotBlank(userNickname)) {
             conditions.add(new Document("userNickname", new Document("$regex", userNickname)));
@@ -125,24 +126,24 @@ public class UserNewService {
             conditions.add(new Document("id", userId));
         }
         if (dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null) {
-            conditions.add(new Document("createTime", 
-                new Document("$gte", dateRange[0]).append("$lte", dateRange[1])));
+            conditions.add(new Document("createTime",
+                    new Document("$gte", dateRange[0]).append("$lte", dateRange[1])));
         }
 
         Document query = conditions.isEmpty() ? new Document() : new Document("$and", conditions);
-        
+
         FindIterable<Document> documents = getUserCollection()
-            .find(query)
-            .skip((int) ((userQueryRequest.getCurrent() - 1) * userQueryRequest.getPageSize()))
-            .limit((int) userQueryRequest.getPageSize());
-            
+                .find(query)
+                .skip((int) ((userQueryRequest.getCurrent() - 1) * userQueryRequest.getPageSize()))
+                .limit((int) userQueryRequest.getPageSize());
+
         long total = getUserCollection().count(query);
-        
+
         List<UserTemp> users = new ArrayList<>();
         for (Document doc : documents) {
             users.add(documentToUser(doc));
         }
-        
+
         Page<UserTemp> page = new Page<>(userQueryRequest.getCurrent(), userQueryRequest.getPageSize());
         page.setTotal(total);
         page.setRecords(users);
@@ -155,25 +156,79 @@ public class UserNewService {
             Document existing = getUserCollection().find(
                 new Document("userNickname", user.getUserNickname())
             ).first();
-            
-            if (existing != null && !existing.getString("userId").equals(user.getUserId())) {
-                return null;
+
+            if (existing != null ) {
+                UserTemp existingUser = documentToUser(existing);
+                if (existingUser.getUserId()!=user.getUserId()){
+                    return null;
+                }
+
             }
-            
-            // 获取原用户信息
-            Document userDoc = getUserCollection().find(
-                new Document("userId", user.getUserId())
-            ).first();
-            
-            if (userDoc != null) {
-                user.setPassword(userDoc.getString("password"));
-                getUserCollection().updateOne(
-                    new Document("userId", user.getUserId()),
-                    new Document("$set", Document.parse(objectMapper.writeValueAsString(user)))
+
+            // 构建更新文档（仅包含非null字段）
+            Document updateFields = new Document();
+
+            // 基础字段更新
+            if (user.getPassword() != null) {
+                updateFields.append("password", Md5EncryptionHelper.getMD5WithSalt(user.getPassword()));
+            }
+            if (user.getUserAvatar() != null) {
+                updateFields.append("userAvatar", user.getUserAvatar());
+            }
+            if (user.getUserNickname() != null) {
+                updateFields.append("userNickname", user.getUserNickname());
+            }
+            if (user.getUserTags() != null) {
+                updateFields.append("userTags", user.getUserTags());
+            }
+            if (user.getPhone() != null) {
+                updateFields.append("phone", user.getPhone());
+            }
+            if (user.getMotto() != null) {
+                updateFields.append("motto", user.getMotto());
+            }
+            if (user.getSex() != null) {
+                updateFields.append("sex", user.getSex());
+            }
+            if (user.getUserRole() != null) {
+                updateFields.append("userRole", user.getUserRole());
+            }
+
+            // 时间字段更新（createTime通常不更新）
+            if (user.getCreateTime() != null) {
+                updateFields.append("createTime", user.getCreateTime());
+            }
+
+
+            // 集合字段更新
+            if (user.getPrefGenres() != null && !user.getPrefGenres().isEmpty()) {
+                updateFields.append("prefGenres", user.getPrefGenres());
+                // 特殊字段更新（假设first是Boolean类型）
+                updateFields.append("first", false);
+            }
+
+            // 执行更新操作
+            if (!updateFields.isEmpty()) {
+                UpdateResult result = getUserCollection().updateOne(
+                        new Document("userId", user.getUserId()),
+                        new Document("$set", updateFields)
                 );
-                return user;
+
+                // 自动更新updateTime（推荐）
+                if (result.getModifiedCount() > 0) {
+                    getUserCollection().updateOne(
+                            new Document("userId", user.getUserId()),
+                            new Document("$set", new Document("updateTime", (int)(System.currentTimeMillis()/1000)))
+                    );
+                }
+                Document updateUserDoc = getUserCollection().find(
+                        new Document("userId", user.getUserId())
+                ).first();
+                UserTemp updateUser = documentToUser(updateUserDoc);
+                return updateUser;
             }
-            return null;
+
+            return null; // 没有需要更新的字段
         } catch (Exception e) {
             log.error("更新用户失败", e);
             return null;
@@ -223,44 +278,47 @@ public class UserNewService {
             return false;
         }
     }
-    public boolean checkUserExist(String username){
+
+    public boolean checkUserExist(String username) {
         return null != findByUsername(username);
     }
-    public UserTemp findByUsername(String username){
-        Document user = getUserCollection().find(new Document("userNickname",username)).first();
-        if(null == user || user.isEmpty())
+
+    public UserTemp findByUsername(String username) {
+        Document user = getUserCollection().find(new Document("userNickname", username)).first();
+        if (null == user || user.isEmpty())
             return null;
         return documentToUser(user);
     }
+
     public UserTemp getUserInfo(String token) {
         if (StringUtils.isEmpty(token)) {
             return null;
         }
-        
+
         String userMd = redisApi.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
         if (StringUtils.isEmpty(userMd)) {
             return null;
         }
-        
+
         Document document = getUserCollection().find(new Document("userMd", userMd)).first();
         return document != null ? documentToUser(document) : null;
     }
 
     public Map<String, Object> login(UserInfo userInfo) {
         Document userDoc = getUserCollection().find(
-            new Document("userNickname", userInfo.getUsername())
+                new Document("userNickname", userInfo.getUsername())
         ).first();
-        
+
         if (userDoc == null) {
             return null;
         }
-        
+
         UserTemp user = documentToUser(userDoc);
         if (user.getPassword().equals(Md5EncryptionHelper.getMD5WithSalt(userInfo.getPassword()))) {
             Map<String, Object> info = new HashMap<>();
             String token = RecommendUtils.genToken();
             redisApi.setValue(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token),
-                String.valueOf(user.getUserId()), 7, TimeUnit.DAYS);
+                    String.valueOf(user.getUserId()), 7, TimeUnit.DAYS);
             info.put("token", token);
             info.put("user", user);
             return info;
@@ -272,17 +330,17 @@ public class UserNewService {
     public String uploadAvatar(String userMd, MultipartFile avatar) {
         String name = RecommendUtils.getKey(UserConstant.USER_AVATAR, userMd);
         String url = qiNiuService.uploadPicture(avatar, name);
-        
+
         Document userDoc = getUserCollection().find(new Document("userMd", userMd)).first();
         if (userDoc == null) {
             return "用户不存在";
         }
-        
+
         getUserCollection().updateOne(
-            new Document("userMd", userMd),
-            new Document("$set", new Document("userAvatar", url))
+                new Document("userMd", userMd),
+                new Document("$set", new Document("userAvatar", url))
         );
-        
+
         return url;
     }
 

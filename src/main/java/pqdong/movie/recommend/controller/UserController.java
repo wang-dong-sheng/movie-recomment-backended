@@ -70,11 +70,11 @@ public class UserController {
      */
     @PostMapping("/userInfo")
     public ResponseMessage updateUserInfo(@RequestBody(required = true) UserTemp user) {
-        userNewService.updateUser(user);
+        UserTemp userTemp = userNewService.updateUser(user);
         if (null == user){
             return ResponseMessage.failedMessage("昵称已经存在，请跟换昵称！");
         }
-        return ResponseMessage.successMessage(userNewService.updateUser(user));
+        return ResponseMessage.successMessage(userNewService.updateUser(userTemp));
     }
 
     /**

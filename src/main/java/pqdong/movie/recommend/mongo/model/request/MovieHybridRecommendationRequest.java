@@ -1,28 +1,16 @@
 package pqdong.movie.recommend.mongo.model.request;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class MovieHybridRecommendationRequest {
-    private int mid;
+    private Integer userId;
+    private int movieId;
 
     private int sum;
 
-    public MovieHybridRecommendationRequest(int mid, int sum) {
-        this.mid = mid;
-        this.sum = sum;
-    }
-
-    public int getSum() {
-        return sum;
-    }
-
-    public void setSum(int sum) {
-        this.sum = sum;
-    }
-
-    public int getMid() {
-        return mid;
-    }
-
-    public void setMid(int mid) {
-        this.mid = mid;
-    }
 }

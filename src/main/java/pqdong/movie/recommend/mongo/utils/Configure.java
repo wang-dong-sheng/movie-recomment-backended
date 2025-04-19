@@ -28,6 +28,8 @@ public class Configure {
     private int esPort;
     @Value("${redis.host}")
     private String redisHost;
+    @Value("${redis.database:0}") // 从配置文件中注入数据库索引
+    private int redisDatabase;
 
 //    public Configure(){
 //        try{
@@ -66,6 +68,7 @@ public class Configure {
     @Bean(name = "jedis")
     public Jedis getRedisClient() {
         Jedis jedis = new Jedis(redisHost);
+        jedis.select(redisDatabase); // 选择指定数据库
         return jedis;
     }
 }

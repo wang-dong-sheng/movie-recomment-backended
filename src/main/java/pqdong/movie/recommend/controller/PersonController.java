@@ -6,8 +6,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.mongo.service.PersonMongoService;
-import pqdong.movie.recommend.service.jpa.PersonService;
+import pqdong.movie.recommend.newService.PersonNewService;
 
 import javax.annotation.Resource;
 
@@ -18,7 +17,7 @@ public class PersonController {
 
     @Resource
 //    private PersonService personService;
-    private PersonMongoService personMongoService;
+    private PersonNewService personNewService;
 
     /**
      * @param key  关键字
@@ -31,7 +30,7 @@ public class PersonController {
             @RequestParam(required = false, defaultValue = "") String key,
             @RequestParam(required = false, defaultValue = "1") int page,
             @RequestParam(required = false, defaultValue = "4") int size) {
-        return ResponseMessage.successMessage(personMongoService.getAllPerson(key, page, size));
+        return ResponseMessage.successMessage(personNewService.getAllPerson(key, page, size));
     }
 
     /**
@@ -40,7 +39,7 @@ public class PersonController {
      **/
     @GetMapping("/info")
     public ResponseMessage getPerson(
-            @RequestParam(required = true, defaultValue = "0") Long personId) {
-        return ResponseMessage.successMessage(personMongoService.getPerson(personId));
+            @RequestParam(required = true, defaultValue = "0") Integer personId) {
+        return ResponseMessage.successMessage(personNewService.getPersonById(personId));
     }
 }

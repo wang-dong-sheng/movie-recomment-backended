@@ -9,10 +9,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
  * @TableName user
  */
-@TableName(value ="user")
+@TableName(value = "user")
 @Data
 public class UserTemp implements Serializable {
 
@@ -20,36 +19,36 @@ public class UserTemp implements Serializable {
     private Integer userId;
 
     /**
-     * 
+     *
      */
     private String password;
 
     /**
-     * 
+     *
      */
     private String userAvatar;
     /**
-     * 
+     *
      */
     private String userNickname;
 
     /**
-     * 
+     *
      */
     private String userTags;
 
     /**
-     * 
+     *
      */
     private String phone;
 
     /**
-     * 
+     *
      */
     private String motto;
 
     /**
-     * 
+     *
      */
     private String sex;
 
@@ -67,10 +66,10 @@ public class UserTemp implements Serializable {
      * 更新时间
      */
     private String updateTime;
-//    是否为新用户
-    boolean first;
-    private List<String> prefGenres = new ArrayList<>();
 
+    private List<String> prefGenres = new ArrayList<>();
+    //    是否为新用户
+    private boolean first;
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

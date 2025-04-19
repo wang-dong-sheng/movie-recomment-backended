@@ -1,4 +1,4 @@
-package pqdong.movie.recommend.mongo.service;/**
+package pqdong.movie.recommend.newService;/**
  * @author Mr.Wang
  * @create 2025-04-16-15:47
  */
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.constant.ServerConstant;
 import pqdong.movie.recommend.data.entity.PersonEntity;
 import pqdong.movie.recommend.mongo.utils.Constant;
+import pqdong.movie.recommend.temp.PersonTemp;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import java.io.IOException;
@@ -34,7 +35,7 @@ import java.util.stream.Collectors;
  *@Version 1.0
  */
 @Service
-public class PersonMongoService {
+public class PersonNewService {
 
     @Autowired
     private MongoClient mongoClient;
@@ -50,10 +51,10 @@ public class PersonMongoService {
         return personCollection;
     }
 
-    private PersonEntity documentToPerson(Document document) {
-        PersonEntity person = null;
+    private PersonTemp documentToPerson(Document document) {
+        PersonTemp person = null;
         try {
-            person = objectMapper.readValue(JSON.serialize(document), PersonEntity.class);
+            person = objectMapper.readValue(JSON.serialize(document), PersonTemp.class);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -62,8 +63,8 @@ public class PersonMongoService {
 
     public Map<String, Object> getAllPerson(String key, int page, int size) {
         Pair<Integer, Integer> pair = RecommendUtils.getStartAndEnd(page, size);
-        List<PersonEntity> allPerson = getPersons(key, page * size);
-        List<PersonEntity> personList = allPerson.subList(pair.getLeft(), pair.getRight() <= allPerson.size() ? pair.getRight() : allPerson.size());
+        List<PersonTemp> allPerson = getPersons(key, page * size);
+        List<PersonTemp> personList = allPerson.subList(pair.getLeft(), pair.getRight() <= allPerson.size() ? pair.getRight() : allPerson.size());
         Map<String, Object> result = new HashMap<>(2, 1);
         result.put("total", personList.size());
         result.put("personList", personList.stream().peek(p -> {
@@ -74,8 +75,8 @@ public class PersonMongoService {
         return result;
     }
 
-    private List<PersonEntity> getPersons(String key, int total) {
-        List<PersonEntity> personList = new LinkedList<>();
+    private List<PersonTemp> getPersons(String key, int total) {
+        List<PersonTemp> personList = new LinkedList<>();
         FindIterable<Document> documents;
         
         if (StringUtils.isBlank(key)) {
@@ -90,7 +91,7 @@ public class PersonMongoService {
         return personList;
     }
 
-    public PersonEntity getPerson(Long personId) {
+    public PersonTemp getPersonById(Integer personId) {
         Document document = getPersonCollection().find(new Document("personId", personId)).first();
         if (document == null || document.isEmpty()) {
             return null;
