@@ -11,16 +11,12 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.common.ErrorCode;
-import pqdong.movie.recommend.data.entity.UserEntity;
 import pqdong.movie.recommend.enums.UserRoleEnum;
 import pqdong.movie.recommend.exception.BusinessException;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
-import pqdong.movie.recommend.mongo.model.domain.User;
 import pqdong.movie.recommend.mongo.service.UserMongoService;
-import pqdong.movie.recommend.redis.RedisApi;
-import pqdong.movie.recommend.service.jpa.UserService;
-import pqdong.movie.recommend.service.mabatis.UserMybatisService;
+
 import pqdong.movie.recommend.temp.UserTemp;
 import pqdong.movie.recommend.utils.RecommendUtils;
 

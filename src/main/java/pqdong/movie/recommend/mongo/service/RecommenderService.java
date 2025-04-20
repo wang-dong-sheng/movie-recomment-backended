@@ -1,18 +1,16 @@
 package pqdong.movie.recommend.mongo.service;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
 import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.Sorts;
+import com.mongodb.util.JSON;
+import lombok.extern.slf4j.Slf4j;
 import org.bson.Document;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.index.query.FuzzyQueryBuilder;
-import org.elasticsearch.index.query.MoreLikeThisQueryBuilder;
-import org.elasticsearch.index.query.MultiMatchQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,14 +18,20 @@ import pqdong.movie.recommend.data.dto.movie.RecommendVo;
 import pqdong.movie.recommend.mongo.model.recom.Recommendation;
 import pqdong.movie.recommend.mongo.model.request.*;
 import pqdong.movie.recommend.mongo.utils.Constant;
+import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.utils.EsUtuils;
 
+import javax.annotation.Resource;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
 @Service
+@Slf4j
 public class RecommenderService {
+
 
     // 混合推荐中CF的比例
     private static Double CF_RATING_FACTOR = 0.3;
@@ -36,8 +40,12 @@ public class RecommenderService {
 
     @Autowired
     private MongoClient mongoClient;
-    @Autowired
-    private TransportClient esClient;
+    @Resource
+    private EsUtuils esUtuils;
+    @Resource
+    private ObjectMapper objectMapper;
+//    @Autowired
+//    private TransportClient esClient;
 
     // 协同过滤推荐【电影相似性】
     private List<Recommendation> findMovieCFRecs(int mid, int maxItems) {
@@ -56,12 +64,12 @@ public class RecommenderService {
 
 
     // 基于内容的推荐算法
-    private List<Recommendation> findContentBasedMoreLikeThisRecommendations(int mid, int maxItems) {
-        MoreLikeThisQueryBuilder query = QueryBuilders.moreLikeThisQuery(/*new String[]{"name", "descri", "genres", "actors", "directors", "tags"},*/
-                new MoreLikeThisQueryBuilder.Item[]{new MoreLikeThisQueryBuilder.Item(Constant.ES_INDEX, Constant.ES_MOVIE_TYPE, String.valueOf(mid))});
-
-        return parseESResponse(esClient.prepareSearch().setQuery(query).setSize(maxItems).execute().actionGet());
-    }
+//    private List<Recommendation> findContentBasedMoreLikeThisRecommendations(int mid, int maxItems) {
+//        MoreLikeThisQueryBuilder query = QueryBuilders.moreLikeThisQuery(/*new String[]{"name", "descri", "genres", "actors", "directors", "tags"},*/
+//                new MoreLikeThisQueryBuilder.Item[]{new MoreLikeThisQueryBuilder.Item(Constant.ES_INDEX, Constant.ES_MOVIE_TYPE, String.valueOf(mid))});
+//
+//        return parseESResponse(esClient.prepareSearch().setQuery(query).setSize(maxItems).execute().actionGet());
+//    }
 
     // 实时推荐
     public List<Recommendation> findStreamRecs(int uid,int maxItems){
@@ -88,10 +96,10 @@ public class RecommenderService {
     }
 
     // 全文检索
-    private List<Recommendation> findContentBasedSearchRecommendations(String text, int maxItems) {
-        MultiMatchQueryBuilder query = QueryBuilders.multiMatchQuery(text, "name", "descri");
-        return parseESResponse(esClient.prepareSearch().setIndices(Constant.ES_INDEX).setTypes(Constant.ES_MOVIE_TYPE).setQuery(query).setSize(maxItems).execute().actionGet());
-    }
+//    private List<Recommendation> findContentBasedSearchRecommendations(String text, int maxItems) {
+//        MultiMatchQueryBuilder query = QueryBuilders.multiMatchQuery(text, "name", "descri");
+//        return parseESResponse(esClient.prepareSearch().setIndices(Constant.ES_INDEX).setTypes(Constant.ES_MOVIE_TYPE).setQuery(query).setSize(maxItems).execute().actionGet());
+//    }
 
     private List<Recommendation> parseESResponse(SearchResponse response) {
         List<Recommendation> recommendations = new ArrayList<>();
@@ -114,12 +122,20 @@ public class RecommenderService {
         for (Recommendation recommendation : userCFRecs) {
             hybridRecommendations.add(new Recommendation(recommendation.getMid(),recommendation.getScore()*CF_RATING_FACTOR));
         }
-////这里需要和es交互
-//        List<Recommendation> cbRecs = findContentBasedMoreLikeThisRecommendations(productId, maxItems);
-//        for (Recommendation recommendation : cbRecs) {
-//            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * CB_RATING_FACTOR));
-//        }
+        //通过es进行基于内容的推荐，es筛选通过TF-IDF算法来进行筛选，因为es的评分在范围不确定，采取映射方式，将最高匹配的分数的向上取整映射为5分以此来
+        //换算
 //实时推荐
+        List<Recommendation> esContentRecommnt = findEsContentRecommnt(userId, maxItems);
+        double rate=3;//映射比例
+        if (esContentRecommnt!=null&&!esContentRecommnt.isEmpty()){
+            int upRating=(int)(esContentRecommnt.get(0).getScore()+1);
+            rate=upRating/5.0;
+        }
+        for (Recommendation recommendation : esContentRecommnt) {
+
+            hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore()/rate * SR_RATING_FACTOR));
+        }
+        //基于实时推荐
         List<Recommendation> streamRecs = findStreamRecs(userId,maxItems);
         for (Recommendation recommendation : streamRecs) {
             hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * SR_RATING_FACTOR));
@@ -135,6 +151,30 @@ public class RecommenderService {
     }
 
 
+    /**
+     * 使用es基于用户兴趣标签进行基于内容的推荐
+     * @param userId
+     * @return
+     */
+    private List<Recommendation> findEsContentRecommnt(int userId,int num){
+        MongoCollection<Document> userCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_USER_COLLECTION);
+        Document userDoc = userCollection.find(new Document("userId", userId)).first();
+        UserTemp user = documentToUser(userDoc);
+        List<String> prefGenres = user.getPrefGenres();
+        List<Recommendation> recommendations = esUtuils.searchMoviesByGenres(prefGenres, num);
+
+        return recommendations;
+    }
+
+    private UserTemp documentToUser(Document document) {
+        UserTemp user = null;
+        try {
+            user = objectMapper.readValue(JSON.serialize(document), UserTemp.class);
+        } catch (IOException e) {
+            log.error("转换用户文档失败", e);
+        }
+        return user;
+    }
     public List<Recommendation> getCollaborativeFilteringRecommendations(MovieRecommendationRequest request) {
         return findMovieCFRecs(request.getMid(), request.getSum());
     }
@@ -144,13 +184,13 @@ public class RecommenderService {
         return findUserCFRecs(request.getUid(), request.getSum());
     }
 
-    public List<Recommendation> getContentBasedMoreLikeThisRecommendations(MovieRecommendationRequest request) {
-        return findContentBasedMoreLikeThisRecommendations(request.getMid(), request.getSum());
-    }
+//    public List<Recommendation> getContentBasedMoreLikeThisRecommendations(MovieRecommendationRequest request) {
+//        return findContentBasedMoreLikeThisRecommendations(request.getMid(), request.getSum());
+//    }
 
-    public List<Recommendation> getContentBasedSearchRecommendations(SearchRecommendationRequest request) {
-        return findContentBasedSearchRecommendations(request.getText(), request.getSum());
-    }
+//    public List<Recommendation> getContentBasedSearchRecommendations(SearchRecommendationRequest request) {
+//        return findContentBasedSearchRecommendations(request.getText(), request.getSum());
+//    }
 
     public List<Recommendation> getHybridRecommendations(RecommendVo request) {
         return findHybridRecommendations(request.getUserId(), request.getNum());
@@ -182,10 +222,10 @@ public class RecommenderService {
         return recommendations;
     }
 
-    public List<Recommendation> getContentBasedGenresRecommendations(SearchRecommendationRequest request) {
-        FuzzyQueryBuilder query = QueryBuilders.fuzzyQuery("genres", request.getText());
-        return parseESResponse(esClient.prepareSearch().setIndices(Constant.ES_INDEX).setTypes(Constant.ES_MOVIE_TYPE).setQuery(query).setSize(request.getSum()).execute().actionGet());
-    }
+//    public List<Recommendation> getContentBasedGenresRecommendations(SearchRecommendationRequest request) {
+//        FuzzyQueryBuilder query = QueryBuilders.fuzzyQuery("genres", request.getText());
+//        return parseESResponse(esClient.prepareSearch().setIndices(Constant.ES_INDEX).setTypes(Constant.ES_MOVIE_TYPE).setQuery(query).setSize(request.getSum()).execute().actionGet());
+//    }
 
     public List<Recommendation> getTopGenresRecommendations(TopGenresRecommendationRequest request){
         Document genresTopMovies = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_GENRES_TOP_MOVIES_COLLECTION)

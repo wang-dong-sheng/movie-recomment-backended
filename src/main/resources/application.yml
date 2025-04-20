@@ -12,6 +12,12 @@ spring:
   application:
     name: movie-recommend
   datasource:
+    elasticsearch:
+      client:
+        reactive:
+          endpoints: localhost:9200
+      rest:
+        uris: http://localhost:9200
     driver-class-name: com.mysql.jdbc.Driver # mysql驱动
     username: root # 你的数据库用户名
     password: abc123 # 你的数据库密码，url中添加数据库地址和端口

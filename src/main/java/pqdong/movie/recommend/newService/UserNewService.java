@@ -159,7 +159,7 @@ public class UserNewService {
 
             if (existing != null ) {
                 UserTemp existingUser = documentToUser(existing);
-                if (existingUser.getUserId()!=user.getUserId()){
+                if (!existingUser.getUserId().equals(user.getUserId())){
                     return null;
                 }
 

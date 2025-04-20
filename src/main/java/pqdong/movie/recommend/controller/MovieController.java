@@ -57,10 +57,10 @@ public class MovieController {
     private RecommenderService recommenderService;
     @Autowired
     private MovieMongoService movieMongoService;
-    @Autowired
-    private RatingService ratingService;
-    @Autowired
-    private TagService tagService;
+//    @Autowired
+//    private RatingService ratingService;
+//    @Autowired
+//    private TagService tagService;
 
     /**
      * 获取推荐的电影【实时推荐6 + 内容推荐4】

@@ -33,8 +33,8 @@ public class TagService {
     private MongoClient mongoClient;
     @Autowired
     private ObjectMapper objectMapper;
-    @Autowired
-    private TransportClient esClient;
+//    @Autowired
+//    private TransportClient esClient;
 
     private MongoCollection<Document> tagCollection;
 
@@ -59,34 +59,34 @@ public class TagService {
         }
     }
 
-    public void newTag(Tag tag){
-        try{
-            getTagCollection().insertOne(Document.parse(objectMapper.writeValueAsString(tag)));
-            updateElasticSearchIndex(tag);
-        }catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-    }
+//    public void newTag(Tag tag){
+//        try{
+//            getTagCollection().insertOne(Document.parse(objectMapper.writeValueAsString(tag)));
+//            updateElasticSearchIndex(tag);
+//        }catch (JsonProcessingException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
-    private void updateElasticSearchIndex(Tag tag){
-        GetResponse getResponse = esClient.prepareGet(Constant.ES_INDEX,Constant.ES_MOVIE_TYPE,String.valueOf(tag.getMid())).get();
-        Object value = getResponse.getSourceAsMap().get("tags");
-        UpdateRequest updateRequest = new UpdateRequest(Constant.ES_INDEX,Constant.ES_MOVIE_TYPE,String.valueOf(tag.getMid()));
-        try{
-            if(value == null){
-                updateRequest.doc(XContentFactory.jsonBuilder().startObject().field("tags",tag.getTag()).endObject());
-            }else{
-                updateRequest.doc(XContentFactory.jsonBuilder().startObject().field("tags",value+"|"+tag.getTag()).endObject());
-            }
-            esClient.update(updateRequest).get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void updateElasticSearchIndex(Tag tag){
+//        GetResponse getResponse = esClient.prepareGet(Constant.ES_INDEX,Constant.ES_MOVIE_TYPE,String.valueOf(tag.getMid())).get();
+//        Object value = getResponse.getSourceAsMap().get("tags");
+//        UpdateRequest updateRequest = new UpdateRequest(Constant.ES_INDEX,Constant.ES_MOVIE_TYPE,String.valueOf(tag.getMid()));
+//        try{
+//            if(value == null){
+//                updateRequest.doc(XContentFactory.jsonBuilder().startObject().field("tags",tag.getTag()).endObject());
+//            }else{
+//                updateRequest.doc(XContentFactory.jsonBuilder().startObject().field("tags",value+"|"+tag.getTag()).endObject());
+//            }
+//            esClient.update(updateRequest).get();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        } catch (ExecutionException e) {
+//            e.printStackTrace();
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public List<Tag> findMovieTags(int mid){
         List<Tag> tags = new ArrayList<>();

@@ -1,17 +1,10 @@
 package pqdong.movie.recommend.mongo.utils;
 
 import com.mongodb.MongoClient;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.transport.client.PreBuiltTransportClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.Jedis;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 @Configuration
 public class Configure {
@@ -57,13 +50,13 @@ public class Configure {
         return mongoClient;
     }
 
-    @Bean(name = "transportClient")
-    public TransportClient getTransportClient() throws UnknownHostException {
-        Settings settings = Settings.builder().put("cluster.name",esClusterName).build();
-        TransportClient esClient = new PreBuiltTransportClient(settings);
-        esClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(esHost), esPort));
-        return esClient;
-    }
+//    @Bean(name = "transportClient")
+//    public TransportClient getTransportClient() throws UnknownHostException {
+//        Settings settings = Settings.builder().put("cluster.name",esClusterName).build();
+//        TransportClient esClient = new PreBuiltTransportClient(settings);
+//        esClient.addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(esHost), esPort));
+//        return esClient;
+//    }
 
     @Bean(name = "jedis")
     public Jedis getRedisClient() {
