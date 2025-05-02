@@ -32,6 +32,7 @@ import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
 import pqdong.movie.recommend.temp.MovieTemp;
 import pqdong.movie.recommend.temp.RatingTemp;
+import pqdong.movie.recommend.temp.UserTemp;
 import redis.clients.jedis.Jedis;
 
 import javax.annotation.Resource;
@@ -77,6 +78,7 @@ public class MovieNewService {
         return ratingCollection;
     }
 
+//    private UserTemp getMovieTags()
     private MovieTemp documentToMovie(Document document) {
         MovieTemp movie = null;
         try {

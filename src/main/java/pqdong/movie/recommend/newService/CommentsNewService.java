@@ -70,7 +70,7 @@ public class CommentsNewService {
 
     public Page<CommentsDto> getCommentList(CommentSearchDto commentSearchDto) {
         Long movieId = commentSearchDto.getMovieId();
-        String userMd = commentSearchDto.getUserMd();
+        Integer userId = commentSearchDto.getUserId();
         String movieName = commentSearchDto.getMovieName();
         Date[] dateRange = commentSearchDto.getDateRange();
         long current = commentSearchDto.getCurrent();
@@ -82,8 +82,8 @@ public class CommentsNewService {
         if (movieId != null) {
             conditions.add(new Document("movieId", movieId));
         }
-        if (StringUtils.isNotBlank(userMd)) {
-            conditions.add(new Document("userMd", userMd));
+        if (userId!=null) {
+            conditions.add(new Document("userId", userId));
         }
         if (StringUtils.isNotBlank(movieName)) {
             conditions.add(new Document("movieName", new Document("$regex", movieName)));

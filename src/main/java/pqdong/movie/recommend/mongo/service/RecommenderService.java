@@ -18,6 +18,8 @@ import pqdong.movie.recommend.data.dto.movie.RecommendVo;
 import pqdong.movie.recommend.mongo.model.recom.Recommendation;
 import pqdong.movie.recommend.mongo.model.request.*;
 import pqdong.movie.recommend.mongo.utils.Constant;
+import pqdong.movie.recommend.newService.MovieNewService;
+import pqdong.movie.recommend.temp.MovieTemp;
 import pqdong.movie.recommend.temp.UserTemp;
 import pqdong.movie.recommend.utils.EsUtuils;
 
@@ -40,6 +42,8 @@ public class RecommenderService {
 
     @Autowired
     private MongoClient mongoClient;
+    @Resource
+    private MovieNewService movieNewService;
     @Resource
     private EsUtuils esUtuils;
     @Resource
@@ -197,7 +201,7 @@ public class RecommenderService {
     }
 
 
-    public List<Recommendation> getHotRecommendations(HotRecommendationRequest request) {
+    public List<MovieTemp> getHotRecommendations(HotRecommendationRequest request) {
         // 获取热门电影的条目
         MongoCollection<Document> rateMoreMoviesRecentlyCollection = mongoClient.getDatabase(Constant.MONGODB_DATABASE).getCollection(Constant.MONGODB_RATE_MORE_MOVIES_RECENTLY_COLLECTION);
         FindIterable<Document> documents = rateMoreMoviesRecentlyCollection.find().sort(Sorts.descending("yeahmonth")).limit(request.getSum());
@@ -206,7 +210,9 @@ public class RecommenderService {
         for (Document document : documents) {
             recommendations.add(new Recommendation(document.getInteger("movieId"), 0D));
         }
-        return recommendations;
+        List<MovieTemp> recommendeMovies = movieNewService.getRecommendeMovies(recommendations);
+
+        return recommendeMovies;
     }
 
     public List<Recommendation> getRateMoreRecommendations(RateMoreRecommendationRequest request) {

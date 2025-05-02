@@ -55,6 +55,11 @@ public class RecommendController {
     @PostMapping( "/hybrid")
     public ResponseMessage getGuessMovies(@RequestBody(required = false) RecommendVo recommendVo, @RequestParam(defaultValue = "4", value = "num") int num) {
         UserTemp user = userNewService.findByUsername(recommendVo.getUsername());
+        //如果用户没登陆那么默认展示最近最热电影
+        if (user==null) {
+            List<MovieTemp> recommendeMovies = recommenderService.getHotRecommendations(new HotRecommendationRequest(num));
+            return ResponseMessage.successMessage(recommendeMovies);
+        }
         List<Recommendation> recommendations = recommenderService.getHybridRecommendations(recommendVo);
         if (recommendations.size() == 0) {
             String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
@@ -73,6 +78,10 @@ public class RecommendController {
     @PostMapping( "/currentTime")
     public ResponseMessage getcurrentTimeMovies(@RequestBody(required = false) RecommendVo recommendVo, @RequestParam(defaultValue = "4", value = "num") int num) {
         UserTemp user = userNewService.findByUsername(recommendVo.getUsername());
+        if (user==null) {
+            List<MovieTemp> recommendeMovies = recommenderService.getHotRecommendations(new HotRecommendationRequest(num));
+            return ResponseMessage.successMessage(recommendeMovies);
+        }
         List<Recommendation> recommendations = recommenderService.findStreamRecs(recommendVo.getUserId(),recommendVo.getNum());
         if (recommendations.size() == 0) {
             String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
@@ -91,6 +100,11 @@ public class RecommendController {
     @ResponseBody
     public ResponseMessage<List<MovieTemp>> getWishMovies(@RequestBody(required = false) RecommendVo recommendVo, @RequestParam(defaultValue = "4", value = "num") int num) {
         UserTemp user = userNewService.findByUsername(recommendVo.getUsername());
+        if (user==null) {
+            List<MovieTemp> recommendeMovies = recommenderService.getHotRecommendations(new HotRecommendationRequest(num));
+            return ResponseMessage.successMessage(recommendeMovies);
+        }
+
         List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new UserRecommendationRequest(user.getUserId(), num));
         if (recommendations.size() == 0) {
             String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
@@ -119,8 +133,7 @@ public class RecommendController {
      */
     @PostMapping( "/hot")
     public ResponseMessage<List<MovieTemp>>  getHotMovies(@RequestParam(defaultValue = "4", value = "num") int num) {
-        List<Recommendation> recommendations = recommenderService.getHotRecommendations(new HotRecommendationRequest(num));
-        List<MovieTemp> recommendeMovies = movieNewService.getRecommendeMovies(recommendations);
+        List<MovieTemp> recommendeMovies = recommenderService.getHotRecommendations(new HotRecommendationRequest(num));
         return ResponseMessage.successMessage(recommendeMovies);
     }
 
