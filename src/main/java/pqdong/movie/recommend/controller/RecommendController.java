@@ -51,7 +51,6 @@ public class RecommendController {
      * @param
      * @return
      */
-    // TODO:   bug 混合推荐结果中，基于内容的推荐，基于MID，而非UID
     @PostMapping( "/hybrid")
     public ResponseMessage getGuessMovies(@RequestBody(required = false) RecommendVo recommendVo, @RequestParam(defaultValue = "4", value = "num") int num) {
         UserTemp user = userNewService.findByUsername(recommendVo.getUsername());

@@ -1,5 +1,6 @@
 package pqdong.movie.recommend.newService;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,8 +19,10 @@ import pqdong.movie.recommend.common.ErrorCode;
 import pqdong.movie.recommend.data.constant.ServerConstant;
 import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
 import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
+import pqdong.movie.recommend.data.dto.movie.MovieTempRating;
 import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
+import pqdong.movie.recommend.data.dto.rating.RatingUserRequestPage;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.domain.service.MovieRecommender;
 import pqdong.movie.recommend.enums.MovieRecommentEnum;
@@ -278,7 +281,7 @@ public class MovieNewService {
             recommend = redisApi.getString(RedisKeys.RECOMMEND + ":" + type.getValue() + ":" + userId);
             if (StringUtils.isEmpty(recommend)) {
                 // 获取用户评分记录
-                List<RatingTemp> userRatings = getUserRatings(userId);
+                List<RatingTemp> userRatings = getUserRatings(userId.longValue());
                 if (userRatings != null && !userRatings.isEmpty()) {
                     try {
                         List<Long> movieIds;
@@ -496,5 +499,30 @@ public class MovieNewService {
             jedis.rpop("userId:" + rating.getUserId());
         }
         jedis.lpush("userId:" + rating.getUserId(), rating.getMovieId() + ":" + rating.getRating());
+    }
+
+    public Page<MovieTempRating> getRatedMovieByUserId(RatingUserRequestPage ratingUserRequestPage) {
+        Integer userId = ratingUserRequestPage.getUserId();
+        Page<MovieTempRating> page = new Page<>(ratingUserRequestPage.getCurrent(), ratingUserRequestPage.getPageSize());
+
+        List<RatingTemp> userRatings = this.getUserRatings(userId.longValue());
+        List<Integer> movieIdList = userRatings.stream().map(RatingTemp::getMovieId).collect(Collectors.toList());
+        List<MovieTemp> movies = this.getMovies(movieIdList);
+        //查询分数
+        List<MovieTempRating> movieTempRatingList = movies.stream().map(movie -> {
+            MovieTempRating movieTempRating = new MovieTempRating();
+            BeanUtil.copyProperties(movie, movieTempRating);
+            RatingUserRequest ratingUserRequest = new RatingUserRequest(userId.longValue(), movie.getMovieId().longValue());
+            RatingTemp rating = getScore(ratingUserRequest);
+            movieTempRating.setRating(rating.getRating());
+            return movieTempRating;
+        }).collect(Collectors.toList());
+
+        page.setTotal(movieTempRatingList.size());
+        int fromIndex = (int) ((page.getCurrent() - 1) * page.getSize());
+        int toIndex = Math.min(fromIndex + (int) page.getSize(), movies.size());
+        page.setRecords(movieTempRatingList.subList(fromIndex, toIndex));
+        return page;
+
     }
 }

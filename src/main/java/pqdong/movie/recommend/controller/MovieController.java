@@ -10,11 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
-import pqdong.movie.recommend.data.dto.movie.MovieRecommendVo;
-import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
-import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
+import pqdong.movie.recommend.data.dto.movie.*;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
+import pqdong.movie.recommend.data.dto.rating.RatingUserRequestPage;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
 import pqdong.movie.recommend.data.entity.Movie;
 import pqdong.movie.recommend.domain.util.ResponseMessage;
@@ -57,6 +55,8 @@ public class MovieController {
     private RecommenderService recommenderService;
     @Autowired
     private MovieMongoService movieMongoService;
+    @Resource
+    private RatingService ratingService;
 //    @Autowired
 //    private RatingService ratingService;
 //    @Autowired
@@ -289,4 +289,14 @@ public class MovieController {
         return ResponseMessage.successMessage(movieNewService.updateMovie(movie));
     }
 
+    /**
+     * 查看用户评价过的电影信息
+     * @param ratingUserRequest
+     * @return
+     */
+    @PostMapping("/getRatedMovieByUserId")
+    @LoginRequired
+    public ResponseMessage<Page<MovieTempRating>> getRatedMovieByUserId(@RequestBody(required = true) RatingUserRequestPage ratingUserRequest) {
+        return ResponseMessage.successMessage(movieNewService.getRatedMovieByUserId(ratingUserRequest));
+    }
 }
