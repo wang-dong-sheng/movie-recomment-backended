@@ -7,9 +7,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import pqdong.movie.recommend.annotation.Analysis;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.constant.UserConstant;
+import pqdong.movie.recommend.data.dto.analysis.AnalysisDto;
 import pqdong.movie.recommend.data.dto.movie.*;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequestPage;
@@ -150,13 +152,13 @@ public class MovieController {
     }
 
     /**
-     * @param movieId 电影id
+     * @param ratingVo 注意这里使用ratingVo单纯是不想重新VO，这里只需要接收userId,movieId，在切面中用
      * @method getMovie 获取电影详情
      **/
-    @GetMapping("/info")
-    public ResponseMessage getMovieById(
-            @RequestParam(required = true, defaultValue = "0") Long movieId) {
-        return ResponseMessage.successMessage(movieNewService.getMovieById(movieId));
+    @PostMapping("/info")
+    @Analysis
+    public ResponseMessage getMovieById(@RequestBody RatingVo ratingVo) {
+        return ResponseMessage.successMessage(movieNewService.getMovieById(ratingVo.getMovieId()));
     }
 
     /**
@@ -299,4 +301,7 @@ public class MovieController {
     public ResponseMessage<Page<MovieTempRating>> getRatedMovieByUserId(@RequestBody(required = true) RatingUserRequestPage ratingUserRequest) {
         return ResponseMessage.successMessage(movieNewService.getRatedMovieByUserId(ratingUserRequest));
     }
+
+
+
 }

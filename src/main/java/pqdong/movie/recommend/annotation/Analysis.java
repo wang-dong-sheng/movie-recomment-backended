@@ -6,18 +6,17 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 权限校验
+ * 管理员统计分析系统
+ *
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AuthCheck {
-
+public @interface Analysis {
     /**
-     * 必须有某个角色
+     * 访问的接口操作：主要是两个一个是：查看电影详情信息
      *
      * @return
      */
-    String mustRole() default "";
-
+    String opt() default "";
 }
 

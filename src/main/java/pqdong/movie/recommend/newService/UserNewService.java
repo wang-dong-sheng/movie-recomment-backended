@@ -291,17 +291,21 @@ public class UserNewService {
     }
 
     public UserTemp getUserInfo(String token) {
-        if (StringUtils.isEmpty(token)) {
+
+        if (io.micrometer.core.instrument.util.StringUtils.isEmpty(token)) {
             return null;
         }
-
-        String userMd = redisApi.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
-        if (StringUtils.isEmpty(userMd)) {
+        String userId = redisApi.getString(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token));
+        if (io.micrometer.core.instrument.util.StringUtils.isEmpty(userId)) {
             return null;
         }
-
-        Document document = getUserCollection().find(new Document("userMd", userMd)).first();
-        return document != null ? documentToUser(document) : null;
+        return findByUID(Integer.valueOf(userId));
+    }
+    public UserTemp findByUID(int userId){
+        Document user = getUserCollection().find(new Document("userId",userId)).first();
+        if(null == user || user.isEmpty())
+            return null;
+        return documentToUser(user);
     }
 
     public Map<String, Object> login(UserInfo userInfo) {

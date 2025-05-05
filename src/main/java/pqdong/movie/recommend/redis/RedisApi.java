@@ -18,8 +18,6 @@ import java.util.concurrent.TimeUnit;
 /**
  * RedisService
  *
- * @author pqdong
- * @since 2020/03/04
  */
 @Service
 @Slf4j
