@@ -3,7 +3,6 @@ package pqdong.movie.recommend.temp;/**
  * @create 2025-04-17-17:42
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 /**
@@ -15,7 +14,7 @@ import lombok.Data;
  */
 @Data
 public class CommentsTemp {
-    @JsonIgnore
+//    @JsonIgnore
     private String _id;
 
     /**

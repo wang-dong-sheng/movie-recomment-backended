@@ -61,7 +61,10 @@ public class CommentsNewService {
     private CommentsTemp documentToComment(Document document) {
         CommentsTemp comment = null;
         try {
-            comment =objectMapper.convertValue(document, CommentsTemp.class);
+            Object _id = document.get("_id");
+             comment = BeanUtil.copyProperties(document, CommentsTemp.class, "_id");
+
+            comment.set_id(String.valueOf(_id));
         } catch (Exception e) {
             log.error("转换评论文档失败", e);
         }
@@ -86,10 +89,31 @@ public class CommentsNewService {
             conditions.add(new Document("userId", userId));
         }
         if (StringUtils.isNotBlank(movieName)) {
-            conditions.add(new Document("movieName", new Document("$regex", movieName)));
+            Document movieDoc = getMovieCollection().find(new Document("movieName", movieName)).first();
+            MovieTemp movie=null;
+            try {
+                movie = objectMapper.readValue(JSON.serialize(movieDoc), MovieTemp.class);
+            } catch (IOException e) {
+                log.error("转换评论文档失败", e);
+            }
+            if(movie!=null){
+                conditions.add(new Document("movieId", new Document("$regex", movie.getMovieId())));
+            }
+
         }
         if (StringUtils.isNotBlank(userName)) {
-            conditions.add(new Document("userName", new Document("$regex", userName)));
+            Document userDoc = getUserCollection().find(new Document("userNickname", userName)).first();
+
+            UserTemp user=null;
+            try {
+                user = objectMapper.readValue(JSON.serialize(userDoc), UserTemp.class);
+            } catch (IOException e) {
+                log.error("转换评论文档失败", e);
+            }
+            if (user!=null){
+                conditions.add(new Document("userId", new Document("$regex", user.getUserId())));
+            }
+
         }
         if (dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null) {
             conditions.add(new Document("commentTime", new Document("$gte", dateRange[0]).append("$lte", dateRange[1])));
@@ -144,7 +168,6 @@ public class CommentsNewService {
         return page;
     }
 
-// ... existing code ...
 
     public Boolean addComment(CommentsTemp comment) {
         try {

@@ -97,7 +97,7 @@ public class UserNewService {
 
         // 检查是否有管理员
         for (Long id : ids) {
-            Document userDoc = getUserCollection().find(new Document("id", id)).first();
+            Document userDoc = getUserCollection().find(new Document("userId", id)).first();
             if (userDoc != null) {
                 String userRole = userDoc.getString("userRole");
                 ThrowUtils.throwIf(UserConstant.ADMIN_ROLE.equals(userRole), ErrorCode.NO_AUTH_ERROR, "不能删除管理员");
@@ -105,7 +105,7 @@ public class UserNewService {
         }
 
         try {
-            getUserCollection().deleteMany(new Document("id", new Document("$in", ids)));
+            getUserCollection().deleteMany(new Document("userId", new Document("$in", ids)));
             return true;
         } catch (Exception e) {
             log.error("删除用户失败", e);
@@ -123,7 +123,7 @@ public class UserNewService {
             conditions.add(new Document("userNickname", new Document("$regex", userNickname)));
         }
         if (userId != null) {
-            conditions.add(new Document("id", userId));
+            conditions.add(new Document("userId", userId));
         }
         if (dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null) {
             conditions.add(new Document("createTime",
