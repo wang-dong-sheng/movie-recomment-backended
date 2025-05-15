@@ -10,9 +10,6 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * PrefixRedisSerializer
- *
- * @author pqdong
- * @since 2020/03/04
  */
 @Slf4j
 public class PrefixRedisSerializer implements RedisSerializer<String> {

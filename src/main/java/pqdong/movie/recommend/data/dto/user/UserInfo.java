@@ -5,9 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pqdong.movie.recommend.data.entity.MovieTagEntity;
-
-import java.util.List;
 
 @Data
 // 自动生成无参数构造函数

@@ -6,15 +6,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 import pqdong.movie.recommend.annotation.LoginRequired;
-import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.entity.UserEntity;
-import pqdong.movie.recommend.data.repository.UserRepository;
+import pqdong.movie.recommend.constant.UserConstant;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
-import pqdong.movie.recommend.mongo.service.UserMongoService;
+import pqdong.movie.recommend.service.UserNewService;
 import pqdong.movie.recommend.redis.RedisApi;
 import pqdong.movie.recommend.redis.RedisKeys;
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.data.entity.UserTemp;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.PostConstruct;
@@ -27,8 +25,6 @@ import java.lang.reflect.Method;
 /**
  * LoginInterceptor
  *
- * @author pqdong
- * @since 2020/03/04
  */
 @Slf4j
 @Component
@@ -36,13 +32,11 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
 
     private static LoginInterceptor loginInterceptor;
     @Resource
-    private UserMongoService userMongoService;
+    private UserNewService userNewService;
 
     @Resource
     private RedisApi redis;
 
-    @Resource
-    private UserRepository userRepository;
 
     @PostConstruct
     public void init() {
@@ -68,7 +62,7 @@ public class LoginInterceptor extends HandlerInterceptorAdapter {
                 // 没有获取到redis中的信息
                 throw new MyException(ResultEnum.NEED_LOGIN);
             }
-            UserTemp user = loginInterceptor.userMongoService.findByUID(Integer.valueOf(userId));
+            UserTemp user = loginInterceptor.userNewService.findByUID(Integer.valueOf(userId));
             if (user == null) {
                 // token无法获取到用户信息代表未登陆
                 throw new MyException(ResultEnum.NEED_LOGIN);

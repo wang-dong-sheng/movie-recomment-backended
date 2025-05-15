@@ -15,6 +15,7 @@ import java.util.List;
 public class CommentSearchDto extends PageRequest implements Serializable {
     private Integer page;
 
+    private String _id;
     private String userName;
     private Integer userId;
     private String userMd;

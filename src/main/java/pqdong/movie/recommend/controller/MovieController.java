@@ -4,36 +4,25 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import pqdong.movie.recommend.annotation.Analysis;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
-import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.dto.analysis.AnalysisDto;
-import pqdong.movie.recommend.data.dto.movie.*;
+import pqdong.movie.recommend.constant.UserConstant;
+import pqdong.movie.recommend.data.dto.movie.MovieQueryRequest;
+import pqdong.movie.recommend.data.dto.movie.MovieSearchDto;
+import pqdong.movie.recommend.data.dto.movie.MovieTempRating;
+import pqdong.movie.recommend.data.dto.movie.MovieUpVo;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequest;
 import pqdong.movie.recommend.data.dto.rating.RatingUserRequestPage;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
-import pqdong.movie.recommend.data.entity.Movie;
-import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.mongo.model.domain.MovieMongo;
-import pqdong.movie.recommend.mongo.model.recom.Recommendation;
-import pqdong.movie.recommend.mongo.model.request.MovieHybridRecommendationRequest;
-import pqdong.movie.recommend.mongo.model.request.MovieRecommendationRequest;
-import pqdong.movie.recommend.mongo.model.request.TopGenresRecommendationRequest;
-import pqdong.movie.recommend.mongo.model.request.UserRecommendationRequest;
-import pqdong.movie.recommend.mongo.service.*;
-import pqdong.movie.recommend.newService.MovieNewService;
-import pqdong.movie.recommend.temp.MovieTemp;
-import pqdong.movie.recommend.temp.RatingTemp;
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.common.ResponseMessage;
+import pqdong.movie.recommend.service.MovieNewService;
+import pqdong.movie.recommend.data.entity.MovieTemp;
+import pqdong.movie.recommend.data.entity.RatingTemp;
 
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Random;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/movie")
@@ -42,100 +31,6 @@ public class MovieController {
     @Resource
     private MovieNewService movieNewService;
 
-//    @Resource
-//    private MovieService movieService;
-//    @Resource
-//    private MovieMybatisService movieMybatisService;
-//====================================================新加mongo，es相关以及各类推荐相关========================
-   @Resource
-    private UserMongoService userMongoService;
-
-
-
-
-    @Autowired
-    private RecommenderService recommenderService;
-    @Autowired
-    private MovieMongoService movieMongoService;
-    @Resource
-    private RatingService ratingService;
-//    @Autowired
-//    private RatingService ratingService;
-//    @Autowired
-//    private TagService tagService;
-
-    /**
-     * 获取推荐的电影【实时推荐6 + 内容推荐4】
-     * 默认推荐4部电影
-     * @param username
-     * @param
-     * @return
-     */
-    // TODO:   bug 混合推荐结果中，基于内容的推荐，基于MID，而非UID
-//    @GetMapping("/guss" )
-//    @ResponseBody
-//    public ResponseMessage<List<Movie>> getGuessMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num) {
-//        UserTemp user = userMongoService.findByUsername(username);
-//        //去实时推荐表中找，如果没有那么说明属于冷启动，那么进行基于内容得推荐
-//        List<Recommendation> recommendations = recommenderService.getHybridRecommendations(new MovieHybridRecommendationRequest(user.getUserId(),num));
-//        //冷启动，基于内容推荐
-//        if(recommendations.size()<4){
-//            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
-//            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num-recommendations.size()));
-//        }
-//        List<MovieMongo> hybirdRecommendeMovieMongos = movieMongoService.getHybirdRecommendeMovies(recommendations);
-//        List<Movie> movies = hybirdRecommendeMovieMongos.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
-//        return ResponseMessage.successMessage(movies);
-//    }
-
-    /**
-     *基于用户相似矩阵的电影推荐
-     * @param username
-     * @param model
-     * @return
-     */
-    @GetMapping("/wish" )
-    @ResponseBody
-    public ResponseMessage<List<Movie>> getWishMovies(@RequestParam("username")String username, @RequestParam(value = "num", defaultValue = "4")int num, Model model) {
-        UserTemp user = userMongoService.findByUsername(username);
-        List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new UserRecommendationRequest(user.getUserId(),num));
-        if(recommendations.size()==0){
-            String randomGenres = user.getPrefGenres().get(new Random().nextInt(user.getPrefGenres().size()));
-            recommendations = recommenderService.getTopGenresRecommendations(new TopGenresRecommendationRequest(randomGenres.split(" ")[0],num));
-        }
-        List<MovieMongo> recommendeMovies = movieMongoService.getRecommendeMovies(recommendations);
-        List<Movie> movies = recommendeMovies.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
-
-        return ResponseMessage.successMessage(movies);
-    }
-    /**
-     * 获取电影详细页面相似的电影集合：基于电影相似性的推荐
-     * @param
-     * @param
-     * @return
-     */
-    @GetMapping("/same")
-    @ResponseBody
-    public ResponseMessage<List<Movie>> getSameMovie(int movieId, @RequestParam(value = "num", defaultValue = "4")int num) {
-        List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new MovieRecommendationRequest(movieId,num));
-        List<MovieMongo> recommendeMovies = movieMongoService.getRecommendeMovies(recommendations);
-        List<Movie> movies = recommendeMovies.stream().map(movieMongo -> movieMongo.movieMongoToMovie()).collect(Collectors.toList());
-
-        return ResponseMessage.successMessage(movies);
-    }
-//    ====================================================新加mongo，es相关以及各类推荐相关========================
-
-
-
-//    ============================================基于mysql的相关操作================================
-
-    /**
-     * @method getMovieTags 获取电影标签
-     */
-//    @GetMapping("/tag")
-//    public ResponseMessage get() {
-////        return ResponseMessage.successMessage(movieNewService.getMovieTags());
-//    }
 
     /**
      * @param key  关键字
@@ -184,14 +79,6 @@ public class MovieController {
         }
     }
 
-    /**
-     * @method getHighMovie 获取高分电影
-     **/
-//    @GetMapping("/high")
-//    public ResponseMessage<Page<Movie>> getHighMovie() {
-//
-//        return ResponseMessage.successMessage(movieMybatisService.getHighMovie());
-//    }
 
     /**
      * @param rating 打分
@@ -216,22 +103,6 @@ public class MovieController {
         return ResponseMessage.successMessage(movieNewService.getScore(ratingUserRequest));
     }
 
-    /**
-     * @method getHighMovie 获取高分电影
-     **/
-//    @PostMapping("/recommend")
-//    public ResponseMessage getRecommendMovie(@RequestBody(required = false) UserEntity user) {
-//        return ResponseMessage.successMessage(movieService.getRecommendMovie(user));
-//    }
-
-    /**
-     * @method 基于用户的推荐
-     **/
-    @PostMapping("/recommend")
-    public ResponseMessage getRecommendMovie(@RequestBody(required = false) MovieRecommendVo movieRecommendVo) {
-        return ResponseMessage.successMessage(movieNewService.getRecommendMovie(movieRecommendVo.getUserId(), movieRecommendVo.getType()));
-    }
-
     /*
     删除用户信息
     * */
@@ -244,7 +115,7 @@ public class MovieController {
     }
 
     /**
-     * 按条件查询用户相关信息
+     * 按条件查询电影相关信息
      */
     @PostMapping("/filterMovies")
     public ResponseMessage<Page<MovieTemp>> filterMovies(@RequestBody MovieQueryRequest movieQueryRequest) {

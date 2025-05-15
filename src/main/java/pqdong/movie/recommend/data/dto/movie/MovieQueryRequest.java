@@ -89,7 +89,7 @@ public class MovieQueryRequest extends PageRequest implements Serializable {
      */
     private Integer year;
 
-    private Date[] rangeDate;
+    private Date[] dateRange;
     /**
      * 是否上架
      * 1上架、0：下架

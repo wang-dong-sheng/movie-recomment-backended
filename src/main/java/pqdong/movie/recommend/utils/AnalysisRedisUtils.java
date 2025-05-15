@@ -7,9 +7,9 @@ import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
-import pqdong.movie.recommend.data.constant.RedisAnalysisConstant;
-import pqdong.movie.recommend.mongo.model.recom.Recommendation;
-import pqdong.movie.recommend.mongo.service.RecommenderService;
+import pqdong.movie.recommend.constant.RedisAnalysisConstant;
+import pqdong.movie.recommend.data.dto.Recommendation.Recommendation;
+import pqdong.movie.recommend.service.RecommenderService;
 
 import javax.annotation.Resource;
 import java.util.List;

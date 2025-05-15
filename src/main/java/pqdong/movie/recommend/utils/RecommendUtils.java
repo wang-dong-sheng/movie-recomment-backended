@@ -19,8 +19,6 @@ import pqdong.movie.recommend.data.dto.user.UserInfo;
 /**
  * RecommendUtils
  * 工具类，单例模式
- * @author pqdong
- * @since 2020/03/03
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)

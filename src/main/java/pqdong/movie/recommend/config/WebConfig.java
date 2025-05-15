@@ -9,8 +9,6 @@ import pqdong.movie.recommend.aop.LoginInterceptor;
 /**
  * WebConfig
  *
- * @author pqdong
- * @since 2020/03/09
  */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {

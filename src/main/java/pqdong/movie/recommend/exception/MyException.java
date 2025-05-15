@@ -6,8 +6,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * MyException
  *
- * @author pqdong
- * @since 2020/03/04
  */
 @Slf4j
 public class MyException extends RuntimeException {

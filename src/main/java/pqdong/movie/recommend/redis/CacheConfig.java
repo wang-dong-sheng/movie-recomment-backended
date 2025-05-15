@@ -12,8 +12,6 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 /**
  * CacheConfig
  *
- * @author pqdong
- * @since 2020/03/04
  */
 @Configuration
 @Slf4j

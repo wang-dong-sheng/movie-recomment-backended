@@ -2,7 +2,7 @@ package pqdong.movie.recommend.common;
 
 
 import lombok.Data;
-import pqdong.movie.recommend.data.constant.CommonConstant;
+import pqdong.movie.recommend.constant.CommonConstant;
 
 /**
  * 分页请求

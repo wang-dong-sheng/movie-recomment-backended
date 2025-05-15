@@ -11,13 +11,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.common.ErrorCode;
-import pqdong.movie.recommend.enums.UserRoleEnum;
+import pqdong.movie.recommend.data.enums.UserRoleEnum;
 import pqdong.movie.recommend.exception.BusinessException;
 import pqdong.movie.recommend.exception.MyException;
 import pqdong.movie.recommend.exception.ResultEnum;
-import pqdong.movie.recommend.mongo.service.UserMongoService;
 
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.service.UserNewService;
+import pqdong.movie.recommend.data.entity.UserTemp;
 import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;
@@ -31,7 +31,7 @@ import java.time.format.DateTimeFormatter;
 public class AuthInterceptor {
 
     @Resource
-    private UserMongoService userMongoService;
+    private UserNewService userNewService;
 
 
 
@@ -53,7 +53,7 @@ public class AuthInterceptor {
         if (StringUtils.isEmpty(token)){
             throw new MyException(ResultEnum.NEED_LOGIN);
         }
-        UserTemp loginUser = userMongoService.getUserInfo(token);
+        UserTemp loginUser = userNewService.getUserInfo(token);
         // 必须有该权限才通过
         if (StringUtils.isNotBlank(mustRole)) {
             UserRoleEnum mustUserRoleEnum = UserRoleEnum.getEnumByValue(mustRole);

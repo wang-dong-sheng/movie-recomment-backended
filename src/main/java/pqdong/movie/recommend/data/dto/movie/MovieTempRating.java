@@ -4,7 +4,7 @@ package pqdong.movie.recommend.data.dto.movie;/**
  */
 
 import lombok.Data;
-import pqdong.movie.recommend.temp.MovieTemp;
+import pqdong.movie.recommend.data.entity.MovieTemp;
 
 /**
  *@ClassName MovieTempRating

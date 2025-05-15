@@ -17,8 +17,8 @@ import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Component;
-import pqdong.movie.recommend.mongo.model.recom.Recommendation;
-import pqdong.movie.recommend.temp.MovieTemp;
+import pqdong.movie.recommend.data.dto.Recommendation.Recommendation;
+import pqdong.movie.recommend.data.entity.MovieTemp;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;

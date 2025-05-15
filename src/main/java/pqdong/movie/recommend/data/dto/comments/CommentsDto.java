@@ -4,7 +4,7 @@ package pqdong.movie.recommend.data.dto.comments;/**
  */
 
 import lombok.Data;
-import pqdong.movie.recommend.temp.CommentsTemp;
+import pqdong.movie.recommend.data.entity.CommentsTemp;
 
 /**
  *@ClassName CommentsDto

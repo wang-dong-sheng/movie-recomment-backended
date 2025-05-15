@@ -6,10 +6,7 @@ package pqdong.movie.recommend.data.dto.movie;/**
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import pqdong.movie.recommend.data.entity.User;
-import pqdong.movie.recommend.enums.MovieRecommentEnum;
-
-import java.io.Serializable;
+import pqdong.movie.recommend.data.enums.MovieRecommentEnum;
 
 /**
  *@ClassName MovieRecommentVo

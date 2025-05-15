@@ -5,18 +5,15 @@ package pqdong.movie.recommend.controller;/**
 
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import pqdong.movie.recommend.data.dto.movie.MovieRecommendVo;
 import pqdong.movie.recommend.data.dto.movie.RecommendVo;
-import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.mongo.model.domain.User;
-import pqdong.movie.recommend.mongo.model.recom.Recommendation;
-import pqdong.movie.recommend.mongo.model.request.*;
-import pqdong.movie.recommend.mongo.service.MovieMongoService;
-import pqdong.movie.recommend.mongo.service.RecommenderService;
-import pqdong.movie.recommend.newService.MovieNewService;
-import pqdong.movie.recommend.newService.UserNewService;
-import pqdong.movie.recommend.temp.MovieTemp;
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.common.ResponseMessage;
+import pqdong.movie.recommend.data.request.*;
+import pqdong.movie.recommend.data.dto.Recommendation.Recommendation;
+import pqdong.movie.recommend.service.RecommenderService;
+import pqdong.movie.recommend.service.MovieNewService;
+import pqdong.movie.recommend.service.UserNewService;
+import pqdong.movie.recommend.data.entity.MovieTemp;
+import pqdong.movie.recommend.data.entity.UserTemp;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -35,9 +32,6 @@ public class RecommendController {
 
     @Resource
     private RecommenderService recommenderService;
-
-    @Resource
-    private MovieMongoService movieMongoService;
     @Resource
     private MovieNewService movieNewService;
 
@@ -45,7 +39,7 @@ public class RecommendController {
     private UserNewService userNewService;
 
     /**
-     * 获取推荐的电影【实时推荐6 + 内容推荐4】
+     * 混合推荐，实时推荐+基于内容推荐+基于用户推荐按照加权后混合推荐。
      *
      * @param
      * @param
@@ -149,20 +143,6 @@ public class RecommendController {
     }
 
     /**
-     * 获取新添加的电影
-     *
-     * @param model
-     * @return
-     */
-    @RequestMapping(value = "/new", produces = "application/json", method = RequestMethod.GET)
-    @ResponseBody
-    public Model getNewMovies(@RequestParam("num") int num, Model model) {
-        model.addAttribute("success", true);
-        model.addAttribute("movies", movieMongoService.getNewMovies(new NewRecommendationRequest(num)));
-        return model;
-    }
-
-    /**
      * 获取电影详细页面相似的电影集合：基于电影相似性的推荐
      *
      * @param id
@@ -174,7 +154,7 @@ public class RecommendController {
     public Model getSameMovie(@PathVariable("id") int id, @RequestParam("num") int num, Model model) {
         List<Recommendation> recommendations = recommenderService.getCollaborativeFilteringRecommendations(new MovieRecommendationRequest(id, num));
         model.addAttribute("success", true);
-        model.addAttribute("movies", movieMongoService.getRecommendeMovies(recommendations));
+        model.addAttribute("movies", movieNewService.getRecommendeMovies(recommendations));
         return model;
     }
 

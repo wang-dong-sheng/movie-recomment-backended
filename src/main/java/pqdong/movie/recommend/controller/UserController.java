@@ -9,24 +9,12 @@ import org.springframework.web.multipart.MultipartFile;
 import pqdong.movie.recommend.annotation.AuthCheck;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.common.PageRequest;
-import pqdong.movie.recommend.data.constant.UserConstant;
-import pqdong.movie.recommend.data.dto.user.UserQueryRequest;
-import pqdong.movie.recommend.data.entity.User;
-import pqdong.movie.recommend.data.entity.UserEntity;
+import pqdong.movie.recommend.constant.UserConstant;
 import pqdong.movie.recommend.data.dto.user.UserInfo;
-import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.mongo.model.request.LoginUserRequest;
-import pqdong.movie.recommend.mongo.model.request.RegisterUserRequest;
-import pqdong.movie.recommend.mongo.service.UserMongoService;
-import pqdong.movie.recommend.newService.UserNewService;
-import pqdong.movie.recommend.redis.RedisApi;
-import pqdong.movie.recommend.service.jpa.SmsService;
-import pqdong.movie.recommend.service.jpa.UserService;
-import pqdong.movie.recommend.service.mabatis.UserMybatisService;
-import pqdong.movie.recommend.temp.UserTemp;
-import pqdong.movie.recommend.utils.Md5EncryptionHelper;
-import pqdong.movie.recommend.utils.RecommendUtils;
-
+import pqdong.movie.recommend.data.dto.user.UserQueryRequest;
+import pqdong.movie.recommend.common.ResponseMessage;
+import pqdong.movie.recommend.service.UserNewService;
+import pqdong.movie.recommend.data.entity.UserTemp;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -35,25 +23,11 @@ import java.util.Map;
 /**
  * UserController
  * @description 用户信息相关接口
- * @author pqdong
- * @since 2020/02/27 16:42
  */
 @RestController
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-    @Resource
-    private RedisApi redisApi;
-    @Resource
-    private SmsService smsService;
-
-//    @Resource
-//    private UserService userService;
-//    @Resource
-//    private UserMybatisService userMybatisService;
-//    @Resource
-//    private UserMongoService userMongoService;
-
     @Resource
     private UserNewService userNewService;
 
@@ -106,20 +80,6 @@ public class UserController {
             return ResponseMessage.failedMessage("登录失败，请检查用户名或密码！");
         }
 
-    }
-
-    /**
-     * @method code 发送短信验证码的接口
-     * @param phone 手机号
-     **/
-    @GetMapping("/code")
-    public ResponseMessage code(@RequestParam String phone) {
-        String code = smsService.sendCode(phone);
-        if (StringUtils.isNotEmpty(code)) {
-            return ResponseMessage.successMessage("发送成功");
-        } else {
-            return ResponseMessage.failedMessage("发送失败");
-        }
     }
 
     /**

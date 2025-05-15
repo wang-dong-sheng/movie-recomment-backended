@@ -10,10 +10,8 @@ import org.springframework.web.bind.annotation.RestController;
 import pqdong.movie.recommend.annotation.LoginRequired;
 import pqdong.movie.recommend.data.dto.analysis.AnalysisDto;
 import pqdong.movie.recommend.data.dto.analysis.AnalysisVo;
-import pqdong.movie.recommend.domain.util.ResponseMessage;
-import pqdong.movie.recommend.newService.AnalysisService;
-import pqdong.movie.recommend.newService.MovieNewService;
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.common.ResponseMessage;
+import pqdong.movie.recommend.service.AnalysisService;
 
 import javax.annotation.Resource;
 import java.util.List;

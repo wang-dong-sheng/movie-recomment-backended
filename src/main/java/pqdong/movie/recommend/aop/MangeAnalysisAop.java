@@ -5,41 +5,21 @@ package pqdong.movie.recommend.aop;/**
 
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import pqdong.movie.recommend.annotation.Analysis;
-import pqdong.movie.recommend.annotation.AuthCheck;
-import pqdong.movie.recommend.common.ErrorCode;
-import pqdong.movie.recommend.data.constant.RedisAnalysisConstant;
+import pqdong.movie.recommend.constant.RedisAnalysisConstant;
 import pqdong.movie.recommend.data.dto.rating.RatingVo;
-import pqdong.movie.recommend.enums.UserRoleEnum;
-import pqdong.movie.recommend.exception.BusinessException;
-import pqdong.movie.recommend.exception.MyException;
-import pqdong.movie.recommend.exception.ResultEnum;
-import pqdong.movie.recommend.mongo.model.recom.Recommendation;
-import pqdong.movie.recommend.mongo.service.RecommenderService;
-import pqdong.movie.recommend.mongo.service.UserMongoService;
-import pqdong.movie.recommend.newService.MovieNewService;
-import pqdong.movie.recommend.newService.UserNewService;
-import pqdong.movie.recommend.redis.RedisApi;
-import pqdong.movie.recommend.redis.RedisKeys;
-import pqdong.movie.recommend.temp.UserTemp;
+import pqdong.movie.recommend.service.UserNewService;
 import pqdong.movie.recommend.utils.AnalysisRedisUtils;
-import pqdong.movie.recommend.utils.RecommendUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName MangeAnalysisAop

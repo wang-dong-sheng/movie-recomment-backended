@@ -4,7 +4,7 @@ package pqdong.movie.recommend.data.dto.movie;/**
  */
 
 import lombok.Data;
-import pqdong.movie.recommend.enums.MovieRecommentEnum;
+import pqdong.movie.recommend.data.enums.MovieRecommentEnum;
 
 /**
  *@ClassName RecommendVo
