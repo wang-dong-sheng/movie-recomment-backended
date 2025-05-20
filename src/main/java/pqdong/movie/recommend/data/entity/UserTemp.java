@@ -60,12 +60,12 @@ public class UserTemp implements Serializable {
     /**
      * 更新时间
      */
-    private String createTime;
+    private Long createTime;
 
     /**
      * 更新时间
      */
-    private String updateTime;
+    private Long updateTime;
 
     private List<String> prefGenres = new ArrayList<>();
     //    是否为新用户

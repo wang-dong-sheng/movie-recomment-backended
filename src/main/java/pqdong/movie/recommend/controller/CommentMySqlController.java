@@ -47,7 +47,7 @@ public class CommentMySqlController {
      */
     @DeleteMapping("/deleteComments")
     @LoginRequired
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+//    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public ResponseMessage<Boolean> deleteComments(@RequestBody List<String> ids) {
         boolean b = commentsNewService.deleteComments(ids);
         log.info("");

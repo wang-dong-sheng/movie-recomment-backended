@@ -35,7 +35,7 @@ public class CommentsTemp {
     /**
      *
      */
-    private String commentTime;
+    private Long commentTime;
 
     /**
      *

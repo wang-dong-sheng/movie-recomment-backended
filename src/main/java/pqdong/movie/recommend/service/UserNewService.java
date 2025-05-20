@@ -122,7 +122,7 @@ public class UserNewService {
         }
         if (dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null) {
             conditions.add(new Document("createTime",
-                    new Document("$gte", dateRange[0]).append("$lte", dateRange[1])));
+                    new Document("$gte", dateRange[0].getTime()).append("$lte", dateRange[1].getTime())));
         }
 
         Document query = conditions.isEmpty() ? new Document() : new Document("$and", conditions);
@@ -190,7 +190,7 @@ public class UserNewService {
             }
 
             // 时间字段更新（createTime通常不更新）
-            if (user.getCreateTime() != null) {
+            if (user.getCreateTime()!=null) {
                 updateFields.append("createTime", user.getCreateTime());
             }
 
@@ -241,7 +241,7 @@ public class UserNewService {
         user.setFirst(true);
         user.setSex("男");
         user.setUserRole("user");
-        user.setCreateTime(String.valueOf(System.currentTimeMillis()));
+        user.setCreateTime(System.currentTimeMillis());
 
         try {
             // 1. 获取用户集合
@@ -318,6 +318,7 @@ public class UserNewService {
             String token = RecommendUtils.genToken();
             redisApi.setValue(RecommendUtils.getKey(RedisKeys.USER_TOKEN, token),
                     String.valueOf(user.getUserId()), 7, TimeUnit.DAYS);
+            user.setPassword(null);
             info.put("token", token);
             info.put("user", user);
             return info;

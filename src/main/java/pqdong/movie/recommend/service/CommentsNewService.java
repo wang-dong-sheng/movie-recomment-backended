@@ -1,6 +1,8 @@
 package pqdong.movie.recommend.service;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.lang.UUID;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mongodb.MongoClient;
@@ -129,8 +131,8 @@ public class CommentsNewService {
 
         if (dateRange != null && dateRange.length == 2 && dateRange[0] != null && dateRange[1] != null) {
             conditions.add(Filters.and(
-                    Filters.gte("commentTime", dateRange[0]),
-                    Filters.lte("commentTime", dateRange[1])
+                    Filters.gte("commentTime", dateRange[0].getTime()),
+                    Filters.lte("commentTime", dateRange[1].getTime())
             ));
         }
 
@@ -206,9 +208,10 @@ public class CommentsNewService {
                 log.warn("评论已存在");
                 return false;
             }
+            comment.setCommentTime(System.currentTimeMillis());
 
             // 插入新评论
-            getCommentsCollection().insertOne(Document.parse(objectMapper.writeValueAsString(comment)));
+            getCommentsCollection().insertOne(Document.parse(JSONUtil.toJsonStr(comment)));
             return true;
         } catch (Exception e) {
             log.error("添加评论失败", e);
