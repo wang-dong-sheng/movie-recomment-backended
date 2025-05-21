@@ -525,4 +525,13 @@ public class MovieNewService {
         return page;
 
     }
+    public List<RatingTemp> getRatedMovieByUserId(Integer userId){
+        FindIterable<Document> documents = getRatingCollection().find(Filters.eq("userId", userId));
+        ArrayList<RatingTemp> ratingList = new ArrayList<>();
+        for (Document document : documents) {
+            RatingTemp ratingTemp = documentToRating(document);
+            ratingList.add(ratingTemp);
+        }
+        return ratingList;
+    }
 }

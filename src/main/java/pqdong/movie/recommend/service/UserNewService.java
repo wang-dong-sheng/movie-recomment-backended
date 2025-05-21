@@ -1,5 +1,6 @@
 package pqdong.movie.recommend.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -55,12 +56,7 @@ public class UserNewService {
     }
 
     private UserTemp documentToUser(Document document) {
-        UserTemp user = null;
-        try {
-            user = objectMapper.readValue(JSON.serialize(document), UserTemp.class);
-        } catch (IOException e) {
-            log.error("转换用户文档失败", e);
-        }
+        UserTemp user = BeanUtil.copyProperties(document, UserTemp.class);
         return user;
     }
 
@@ -149,12 +145,12 @@ public class UserNewService {
         try {
             // 检查用户名是否已存在
             Document existing = getUserCollection().find(
-                new Document("userNickname", user.getUserNickname())
+                    new Document("userNickname", user.getUserNickname())
             ).first();
 
-            if (existing != null ) {
+            if (existing != null) {
                 UserTemp existingUser = documentToUser(existing);
-                if (!existingUser.getUserId().equals(user.getUserId())){
+                if (!existingUser.getUserId().equals(user.getUserId())) {
                     return null;
                 }
 
@@ -190,7 +186,7 @@ public class UserNewService {
             }
 
             // 时间字段更新（createTime通常不更新）
-            if (user.getCreateTime()!=null) {
+            if (user.getCreateTime() != null) {
                 updateFields.append("createTime", user.getCreateTime());
             }
 
@@ -213,7 +209,7 @@ public class UserNewService {
                 if (result.getModifiedCount() > 0) {
                     getUserCollection().updateOne(
                             new Document("userId", user.getUserId()),
-                            new Document("$set", new Document("updateTime", (int)(System.currentTimeMillis()/1000)))
+                            new Document("$set", new Document("updateTime", (int) (System.currentTimeMillis() / 1000)))
                     );
                 }
                 Document updateUserDoc = getUserCollection().find(
@@ -296,9 +292,10 @@ public class UserNewService {
         }
         return findByUID(Integer.valueOf(userId));
     }
-    public UserTemp findByUID(int userId){
-        Document user = getUserCollection().find(new Document("userId",userId)).first();
-        if(null == user || user.isEmpty())
+
+    public UserTemp findByUID(int userId) {
+        Document user = getUserCollection().find(new Document("userId", userId)).first();
+        if (null == user || user.isEmpty())
             return null;
         return documentToUser(user);
     }

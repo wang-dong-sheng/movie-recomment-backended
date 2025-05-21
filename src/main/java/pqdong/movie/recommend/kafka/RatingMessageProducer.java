@@ -1,4 +1,7 @@
 package pqdong.movie.recommend.kafka;
+/**
+ * 创建消费者，并制定对应的格式
+ */
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.*;

@@ -4,6 +4,10 @@ import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
 import java.util.Properties;
 
+/**
+ * kafka连接设置，创建
+ * 单例模式
+ */
 public class KafkaSingletonProducer {
     // 使用 volatile + 双重检查锁保证线程安全[6,8](@ref)
     private static volatile Producer<String, String> instance;

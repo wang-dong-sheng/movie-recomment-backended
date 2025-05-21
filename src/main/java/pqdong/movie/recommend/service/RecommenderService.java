@@ -15,6 +15,7 @@ import org.elasticsearch.search.SearchHit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import pqdong.movie.recommend.data.dto.movie.RecommendVo;
+import pqdong.movie.recommend.data.entity.RatingTemp;
 import pqdong.movie.recommend.data.request.*;
 import pqdong.movie.recommend.data.dto.Recommendation.Recommendation;
 import pqdong.movie.recommend.constant.Constant;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -144,13 +146,16 @@ public class RecommenderService {
             hybridRecommendations.add(new Recommendation(recommendation.getMid(), recommendation.getScore() * SR_RATING_FACTOR));
         }
 
+        //获取用户已经评分过的电影，然后从推荐列表中去掉
+        List<RatingTemp> ratingsByUser = movieNewService.getRatedMovieByUserId(userId);
+        List<Integer> existMovie = ratingsByUser.stream().map(RatingTemp::getMovieId).collect(Collectors.toList());
         Collections.sort(hybridRecommendations, new Comparator<Recommendation>() {
             @Override
             public int compare(Recommendation o1, Recommendation o2) {
                 return o1.getScore() > o2.getScore() ? -1 : 1;
             }
         });
-        return hybridRecommendations.subList(0, maxItems > hybridRecommendations.size() ? hybridRecommendations.size() : maxItems);
+        return hybridRecommendations.stream().filter((recommendation -> !existMovie.contains(recommendation.getMid()))).collect(Collectors.toList()).subList(0, maxItems > hybridRecommendations.size() ? hybridRecommendations.size() : maxItems);
     }
 
 
